@@ -179,7 +179,11 @@ export default function EventsPage() {
                     </Button>
                   </div>
                   <CardTitle className="text-lg text-foreground">
-                    {event.title}
+                    {event.featuredSessionId
+                      ? event.sessions.find(
+                          (s) => s.id === event.featuredSessionId
+                        )?.title || event.title
+                      : event.title}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground leading-normal">
                     {event.description}
@@ -237,7 +241,11 @@ export default function EventsPage() {
                           {event.category}
                         </Badge>
                         <CardTitle className="text-xl text-foreground">
-                          {event.title}
+                          {event.featuredSessionId
+                            ? event.sessions.find(
+                                (s) => s.id === event.featuredSessionId
+                              )?.title || event.title
+                            : event.title}
                         </CardTitle>
                       </div>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -312,7 +320,11 @@ export default function EventsPage() {
                               {event.category}
                             </Badge>
                             <CardTitle className="text-xl text-foreground">
-                              {event.title}
+                              {event.featuredSessionId
+                                ? event.sessions.find(
+                                    (s) => s.id === event.featuredSessionId
+                                  )?.title || event.title
+                                : event.title}
                             </CardTitle>
                           </div>
                           <Button

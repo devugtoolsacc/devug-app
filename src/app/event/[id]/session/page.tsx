@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -20,11 +20,12 @@ import {
   X,
   Play,
   Clock,
-  Users,
   Mic,
   Coffee,
   Megaphone,
 } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { sampleEvents } from '@/data/data';
 
 type SessionType = 'announcement' | 'break' | 'talk';
 
@@ -252,101 +253,21 @@ function SessionFeedbackCard({
 }
 
 export default function SessionPage() {
-  const [sessions, setSessions] = useState<SessionData[]>([
-    {
-      id: 1,
-      title: 'Welcome & Opening Remarks',
-      type: 'announcement',
-      startTime: new Date('2024-01-15T09:00:00'),
-      endTime: new Date('2024-01-15T09:15:00'),
-      completed: true,
-      isActive: false,
-      open: false,
-      description:
-        "Welcome to our annual developer conference. We're excited to have you all here!",
-      questions: [],
-      feedback: { rating: 0, tags: [], comment: '' },
-    },
-    {
-      id: 2,
-      title: 'Modern Web Development with React',
-      type: 'talk',
-      startTime: new Date('2024-01-15T09:15:00'),
-      endTime: new Date('2024-01-15T10:15:00'),
-      completed: false,
-      isActive: true,
-      open: true,
-      speaker: {
-        name: 'Thabiso Magwaza',
-        avatar: 'TM',
-        role: 'Senior Frontend Developer',
-      },
-      description:
-        'Explore the latest features in React 18 and how they can improve your development workflow.',
-      videoLink: 'https://meet.google.com/abc-defg-hij',
-      questions: [
-        {
-          id: 1,
-          text: 'Where do you work?',
-          author: 'Nathi',
-          sessionId: 2,
-          timestamp: new Date(),
-        },
-        {
-          id: 2,
-          text: 'Thabiso raise hand.',
-          author: 'System',
-          sessionId: 2,
-          isHandRaise: true,
-          timestamp: new Date(),
-        },
-        {
-          id: 3,
-          text: 'Does those even work?',
-          author: 'you',
-          sessionId: 2,
-          timestamp: new Date(),
-        },
-      ],
-      feedback: { rating: 0, tags: [], comment: '' },
-    },
-    {
-      id: 3,
-      title: 'Coffee Break',
-      type: 'break',
-      startTime: new Date('2024-01-15T10:15:00'),
-      endTime: new Date('2024-01-15T10:30:00'),
-      completed: false,
-      isActive: false,
-      open: false,
-      description:
-        'Take a short break, grab some coffee, and network with fellow developers.',
-      questions: [],
-      feedback: { rating: 0, tags: [], comment: '' },
-    },
-    {
-      id: 4,
-      title: 'Building Scalable APIs with Node.js',
-      type: 'talk',
-      startTime: new Date('2024-01-15T10:30:00'),
-      endTime: new Date('2024-01-15T11:30:00'),
-      completed: false,
-      isActive: false,
-      open: false,
-      speaker: {
-        name: 'Sarah Johnson',
-        avatar: 'SJ',
-        role: 'Backend Engineer',
-      },
-      description:
-        'Learn best practices for building robust and scalable APIs using Node.js and Express.',
-      videoLink: 'https://meet.google.com/xyz-uvw-rst',
-      questions: [],
-      feedback: { rating: 0, tags: [], comment: '' },
-    },
-  ]);
+  const params = useParams();
+  const eventId = params.id as string;
 
-  const [openSessions, setOpenSessions] = useState<number[]>([2]); // Session 2 open by default
+  // Find the event by ID
+  const event = sampleEvents.find((e) => e.id === eventId);
+
+  // Convert event sessions to SessionData format and add open state
+  const [sessions, setSessions] = useState<SessionData[]>(
+    event?.sessions?.map((session) => ({
+      ...session,
+      open: false, // Add open state for collapsible
+    })) || []
+  );
+
+  const [openSessions, setOpenSessions] = useState<number[]>([]);
   const [newQuestion, setNewQuestion] = useState('');
   const [isHandRaised, setIsHandRaised] = useState(false);
 
@@ -370,6 +291,19 @@ export default function SessionPage() {
 
     return () => clearInterval(interval);
   }, []);
+
+  if (!event) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="text-center">
+          <h1 className="text-4xl text-foreground mb-8">Event Not Found</h1>
+          <p className="text-lg text-muted-foreground">
+            The event you&apos;re looking for doesn&apos;t exist.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const toggleSession = (sessionId: number) => {
     setOpenSessions((prev) =>
@@ -458,15 +392,13 @@ export default function SessionPage() {
     console.log(`Session ${sessionId} feedback:`, feedback);
   };
 
-  const activeSession = sessions.find((s) => s.isActive);
-
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Page Header */}
       <div className="text-center">
-        <h1 className="text-4xl text-foreground mb-8">DevUG Conference 2024</h1>
+        <h1 className="text-4xl text-foreground mb-8">{event.title}</h1>
         <p className="text-lg text-muted-foreground">
-          January 15, 2024 • Johannesburg, South Africa
+          {event.date} • {event.location}
         </p>
       </div>
 

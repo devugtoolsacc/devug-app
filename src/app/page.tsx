@@ -76,7 +76,11 @@ export default function Home() {
                         LIVE
                       </Badge>
                       <CardTitle className="text-lg text-foreground">
-                        {event.title}
+                        {event.featuredSessionId
+                          ? event.sessions.find(
+                              (s) => s.id === event.featuredSessionId
+                            )?.title || event.title
+                          : event.title}
                       </CardTitle>
                     </div>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -146,7 +150,11 @@ export default function Home() {
                       {event.category}
                     </Badge>
                     <CardTitle className="text-xl text-foreground">
-                      {event.title}
+                      {event.featuredSessionId
+                        ? event.sessions.find(
+                            (s) => s.id === event.featuredSessionId
+                          )?.title || event.title
+                        : event.title}
                     </CardTitle>
                   </div>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

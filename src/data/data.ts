@@ -1,3 +1,39 @@
+type SessionType = 'announcement' | 'break' | 'talk';
+
+interface SessionFeedback {
+  rating: number;
+  tags: string[];
+  comment: string;
+}
+
+interface Question {
+  id: number;
+  text: string;
+  author: string;
+  sessionId: number;
+  isHandRaise?: boolean;
+  timestamp: Date;
+}
+
+interface Session {
+  id: number;
+  title: string;
+  type: SessionType;
+  startTime: Date;
+  endTime: Date;
+  completed: boolean;
+  isActive: boolean;
+  speaker?: {
+    name: string;
+    avatar: string;
+    role: string;
+  };
+  description?: string;
+  videoLink?: string;
+  questions: Question[];
+  feedback: SessionFeedback;
+}
+
 interface Event {
   id: string;
   title: string;
@@ -14,6 +50,8 @@ interface Event {
   isLive: boolean;
   tags: string[];
   category: 'workshop' | 'talk' | 'networking' | 'hackathon' | 'conference';
+  sessions: Session[];
+  featuredSessionId?: number; // ID of the session to feature on home/events pages
 }
 
 export const sampleEvents: Event[] = [
@@ -45,6 +83,82 @@ export const sampleEvents: Event[] = [
     isLive: false,
     tags: ['React', 'Frontend', 'JavaScript'],
     category: 'talk',
+    featuredSessionId: 2,
+    sessions: [
+      {
+        id: 1,
+        title: 'Welcome & Opening Remarks',
+        type: 'announcement',
+        startTime: new Date('2024-01-15T19:00:00'),
+        endTime: new Date('2024-01-15T19:05:00'),
+        completed: true,
+        isActive: false,
+        description:
+          "Welcome to our React 19 Deep Dive event. We're excited to have you all here!",
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+      {
+        id: 2,
+        title: "React 19 Deep Dive: What's New and How to Migrate",
+        type: 'talk',
+        startTime: new Date('2024-01-15T19:05:00'),
+        endTime: new Date('2024-01-15T20:45:00'),
+        completed: false,
+        isActive: true,
+        speaker: {
+          name: 'Thabiso Magwaza',
+          avatar: 'TM',
+          role: 'Senior Frontend Engineer',
+        },
+        description:
+          'Explore the latest features in React 19 and how they can improve your development workflow.',
+        videoLink: 'https://meet.google.com/abc-defg-hij',
+        questions: [
+          {
+            id: 1,
+            text: 'Where do you work?',
+            author: 'Nathi',
+            sessionId: 2,
+            timestamp: new Date(),
+          },
+          {
+            id: 2,
+            text: 'Thabiso raise hand.',
+            author: 'System',
+            sessionId: 2,
+            isHandRaise: true,
+            timestamp: new Date(),
+          },
+          {
+            id: 3,
+            text: 'Does those even work?',
+            author: 'you',
+            sessionId: 2,
+            timestamp: new Date(),
+          },
+        ],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+      {
+        id: 3,
+        title: 'Q&A Session',
+        type: 'talk',
+        startTime: new Date('2024-01-15T20:45:00'),
+        endTime: new Date('2024-01-15T21:00:00'),
+        completed: false,
+        isActive: false,
+        speaker: {
+          name: 'Thabiso Magwaza',
+          avatar: 'TM',
+          role: 'Senior Frontend Engineer',
+        },
+        description:
+          'Open Q&A session with Thabiso about React 19 and migration strategies.',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+    ],
   },
   {
     id: '2',
@@ -72,6 +186,31 @@ export const sampleEvents: Event[] = [
     isLive: false,
     tags: ['Node.js', 'TypeScript', 'API', 'Backend'],
     category: 'workshop',
+    featuredSessionId: 1,
+    sessions: [
+      {
+        id: 1,
+        title: 'Building Scalable APIs with Node.js and TypeScript',
+        type: 'talk',
+        startTime: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000 + 18.5 * 60 * 60 * 1000
+        ),
+        endTime: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000 + 20.5 * 60 * 60 * 1000
+        ),
+        completed: false,
+        isActive: false,
+        speaker: {
+          name: 'Sarah Johnson',
+          avatar: 'SJ',
+          role: 'Backend Lead',
+        },
+        description:
+          'Learn how to build robust, scalable APIs using Node.js and TypeScript.',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+    ],
   },
   {
     id: '3',
@@ -97,6 +236,28 @@ export const sampleEvents: Event[] = [
     isLive: false,
     tags: ['AI', 'Machine Learning', 'MLOps', 'Python'],
     category: 'talk',
+    featuredSessionId: 1,
+    sessions: [
+      {
+        id: 1,
+        title: 'AI/ML in Production: From Prototype to Scale',
+        type: 'talk',
+        startTime: new Date('2025-09-30T19:00:00'),
+        endTime: new Date('2025-09-30T21:00:00'),
+        completed: false,
+        isActive: false,
+        speaker: {
+          name: 'Dr. Aisha Patel',
+          avatar: 'AP',
+          role: 'ML Engineer',
+        },
+        description:
+          'Discover how to take your AI/ML models from prototype to production.',
+        videoLink: 'https://meet.google.com/ai-ml-session',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+    ],
   },
   {
     id: '4',
@@ -117,6 +278,27 @@ export const sampleEvents: Event[] = [
     isLive: false,
     tags: ['DevOps', 'Docker', 'Kubernetes', 'CI/CD'],
     category: 'workshop',
+    featuredSessionId: 1,
+    sessions: [
+      {
+        id: 1,
+        title: 'DevOps Best Practices for Modern Applications',
+        type: 'talk',
+        startTime: new Date('2025-10-05T18:00:00'),
+        endTime: new Date('2025-10-05T20:00:00'),
+        completed: false,
+        isActive: false,
+        speaker: {
+          name: 'Michael Chen',
+          avatar: 'MC',
+          role: 'DevOps Engineer',
+        },
+        description:
+          'Explore modern DevOps practices including CI/CD pipelines, containerization with Docker, Kubernetes orchestration, and cloud-native development.',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+    ],
   },
   {
     id: '5',
@@ -141,6 +323,27 @@ export const sampleEvents: Event[] = [
     isLive: false,
     tags: ['Web3', 'Blockchain', 'Smart Contracts', 'Solidity'],
     category: 'workshop',
+    featuredSessionId: 1,
+    sessions: [
+      {
+        id: 1,
+        title: 'Web3 and Blockchain Development Workshop',
+        type: 'talk',
+        startTime: new Date('2025-10-10T14:00:00'),
+        endTime: new Date('2025-10-10T17:00:00'),
+        completed: false,
+        isActive: false,
+        speaker: {
+          name: 'Lerato Molefe',
+          avatar: 'LM',
+          role: 'Blockchain Developer',
+        },
+        description:
+          'Get hands-on experience with Web3 development. Build a simple dApp, understand smart contracts, and explore the future of decentralized applications.',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+    ],
   },
   {
     id: '6',
@@ -169,6 +372,28 @@ export const sampleEvents: Event[] = [
     isLive: true,
     tags: ['WebSockets', 'Real-time', 'Node.js', 'React'],
     category: 'workshop',
+    featuredSessionId: 1,
+    sessions: [
+      {
+        id: 1,
+        title: 'Building Real-time Applications with WebSockets',
+        type: 'talk',
+        startTime: new Date(),
+        endTime: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours from now
+        completed: false,
+        isActive: true,
+        speaker: {
+          name: 'Alex Thompson',
+          avatar: 'AT',
+          role: 'Full Stack Developer',
+        },
+        description:
+          'Join us live as we build a real-time chat application using WebSockets, Node.js, and React.',
+        videoLink: 'https://meet.google.com/websockets-live',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+    ],
   },
   {
     id: '7',
@@ -198,6 +423,28 @@ export const sampleEvents: Event[] = [
     isLive: true,
     tags: ['Career', 'Q&A', 'Networking'],
     category: 'networking',
+    featuredSessionId: 1,
+    sessions: [
+      {
+        id: 1,
+        title: 'Q&A Session: Career in Tech',
+        type: 'talk',
+        startTime: new Date(),
+        endTime: new Date(Date.now() + 1.5 * 60 * 60 * 1000), // 1.5 hours from now
+        completed: false,
+        isActive: true,
+        speaker: {
+          name: 'Zinhle Dlamini',
+          avatar: 'ZD',
+          role: 'Engineering Manager',
+        },
+        description:
+          'Live Q&A session with industry professionals. Ask questions about breaking into tech, career progression, salary negotiations, and more!',
+        videoLink: 'https://meet.google.com/career-qa',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+    ],
   },
   {
     id: '8',
@@ -218,6 +465,27 @@ export const sampleEvents: Event[] = [
     isLive: false,
     tags: ['React Native', 'Mobile', 'Cross-platform', 'JavaScript'],
     category: 'workshop',
+    featuredSessionId: 1,
+    sessions: [
+      {
+        id: 1,
+        title: 'Mobile App Development with React Native',
+        type: 'talk',
+        startTime: new Date('2025-10-15T19:00:00'),
+        endTime: new Date('2025-10-15T21:00:00'),
+        completed: false,
+        isActive: false,
+        speaker: {
+          name: 'Tumi Maseko',
+          avatar: 'TM',
+          role: 'Mobile Developer',
+        },
+        description:
+          'Learn to build cross-platform mobile applications using React Native.',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+    ],
   },
   {
     id: '9',
@@ -242,6 +510,27 @@ export const sampleEvents: Event[] = [
     isLive: false,
     tags: ['Database', 'SQL', 'NoSQL', 'Performance'],
     category: 'talk',
+    featuredSessionId: 1,
+    sessions: [
+      {
+        id: 1,
+        title: 'Database Design and Optimization',
+        type: 'talk',
+        startTime: new Date('2025-10-20T18:30:00'),
+        endTime: new Date('2025-10-20T20:30:00'),
+        completed: false,
+        isActive: false,
+        speaker: {
+          name: 'Dr. Peter van der Merwe',
+          avatar: 'PV',
+          role: 'Database Architect',
+        },
+        description:
+          'Master database design principles, query optimization, and performance tuning.',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+    ],
   },
   {
     id: '10',
@@ -266,5 +555,46 @@ export const sampleEvents: Event[] = [
     isLive: false,
     tags: ['Hackathon', 'Competition', 'Networking', 'Prizes'],
     category: 'hackathon',
+    featuredSessionId: 1,
+    sessions: [
+      {
+        id: 1,
+        title: 'Hackathon Opening & Rules',
+        type: 'announcement',
+        startTime: new Date('2025-10-25T09:00:00'),
+        endTime: new Date('2025-10-25T09:30:00'),
+        completed: false,
+        isActive: false,
+        description:
+          'Welcome to the Annual DevUG Hackathon 2025! Learn about the rules, prizes, and schedule.',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+      {
+        id: 2,
+        title: 'Coding Session',
+        type: 'talk',
+        startTime: new Date('2025-10-25T09:30:00'),
+        endTime: new Date('2025-10-26T09:00:00'),
+        completed: false,
+        isActive: false,
+        description:
+          '24 hours of coding, learning, and building amazing projects!',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+      {
+        id: 3,
+        title: 'Project Presentations & Awards',
+        type: 'announcement',
+        startTime: new Date('2025-10-26T09:00:00'),
+        endTime: new Date('2025-10-26T11:00:00'),
+        completed: false,
+        isActive: false,
+        description: 'Teams present their projects and winners are announced!',
+        questions: [],
+        feedback: { rating: 0, tags: [], comment: '' },
+      },
+    ],
   },
 ];
