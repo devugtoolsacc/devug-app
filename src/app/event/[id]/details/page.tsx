@@ -25,14 +25,31 @@ import {
 } from 'lucide-react';
 import { sampleEvents } from '@/data/data';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useState } from 'react';
 
 export default function EventDetailsPage() {
   const params = useParams();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isRSVPed, setIsRSVPed] = useState(false);
 
   // Find the event by ID (in a real app, this would be a database query)
   const event = sampleEvents.find((e) => e.id === params.id) || sampleEvents[0];
+
+  // Check if event is today or live
+  const isEventToday = () => {
+    if (event.isLive) return true;
+
+    const today = new Date();
+    const eventDate = new Date(event.date);
+
+    // Simple date comparison (you might want to use a date library like date-fns for more robust comparison)
+    return today.toDateString() === eventDate.toDateString();
+  };
+
+  const isEventLive = event.isLive;
+  const isToday = isEventToday();
+  const canJoin = isEventLive || isToday;
 
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);
@@ -231,7 +248,9 @@ export default function EventDetailsPage() {
             {/* Registration Card */}
             <Card className="sticky top-6">
               <CardHeader>
-                <CardTitle className="text-xl">Register</CardTitle>
+                <CardTitle className="text-xl">
+                  {canJoin ? 'Join Session' : 'Register'}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
@@ -241,26 +260,83 @@ export default function EventDetailsPage() {
                   <p className="text-sm text-muted-foreground">per person</p>
                 </div>
 
-                <div className="space-y-3">
-                  {event.hasInPerson && (
-                    <Button className="w-full" size="lg">
-                      <Building className="h-4 w-4 mr-2" />
-                      Attend In Person
-                    </Button>
-                  )}
+                {canJoin ? (
+                  // Show Join Session buttons when event is live or today
+                  <div className="space-y-3">
+                    {isEventLive && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                        <Badge
+                          variant="secondary"
+                          className="text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                        >
+                          LIVE NOW
+                        </Badge>
+                      </div>
+                    )}
 
-                  {event.hasOnline && (
-                    <Button variant="outline" className="w-full" size="lg">
-                      <Video className="h-4 w-4 mr-2" />
-                      Join Online
-                    </Button>
-                  )}
-                </div>
+                    {event.hasInPerson && (
+                      <Button className="w-full" size="lg" asChild>
+                        <Link href={`/event/${event.id}/session`}>
+                          <Building className="h-4 w-4 mr-2" />
+                          Join In Person
+                        </Link>
+                      </Button>
+                    )}
+
+                    {event.hasOnline && (
+                      <Button
+                        variant={isEventLive ? 'destructive' : 'default'}
+                        className="w-full"
+                        size="lg"
+                        asChild
+                      >
+                        <Link href={`/event/${event.id}/session`}>
+                          <Video className="h-4 w-4 mr-2" />
+                          {isEventLive ? 'Join Live Stream' : 'Join Online'}
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  // Show RSVP buttons for future events
+                  <div className="space-y-3">
+                    {event.hasInPerson && (
+                      <Button
+                        className="w-full"
+                        size="lg"
+                        onClick={() => setIsRSVPed(true)}
+                        disabled={isRSVPed}
+                      >
+                        <Building className="h-4 w-4 mr-2" />
+                        {isRSVPed ? 'RSVP Confirmed' : 'RSVP In Person'}
+                      </Button>
+                    )}
+
+                    {event.hasOnline && (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        size="lg"
+                        onClick={() => setIsRSVPed(true)}
+                        disabled={isRSVPed}
+                      >
+                        <Video className="h-4 w-4 mr-2" />
+                        {isRSVPed ? 'RSVP Confirmed' : 'RSVP Online'}
+                      </Button>
+                    )}
+                  </div>
+                )}
 
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">
                     {event.attendeeCount} people attending
                   </p>
+                  {canJoin && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Session will start at {event.time}
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -22,7 +22,11 @@ export const sampleEvents: Event[] = [
     title: "React 19 Deep Dive: What's New and How to Migrate",
     description:
       "Join us for an in-depth exploration of React 19's latest features including the new compiler, improved performance, and breaking changes. Learn practical migration strategies and best practices for upgrading your existing React applications.",
-    date: '20 Sept 2025',
+    date: new Date().toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }),
     time: '19:00 - 21:00',
     location: 'BBD Rosebank, Johannesburg, ZA',
     attendeeCount: 45,
@@ -47,7 +51,14 @@ export const sampleEvents: Event[] = [
     title: 'Building Scalable APIs with Node.js and TypeScript',
     description:
       "Learn how to build robust, scalable APIs using Node.js and TypeScript. We'll cover authentication, database design, testing strategies, and deployment best practices.",
-    date: '25 Sept 2025',
+    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(
+      'en-US',
+      {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }
+    ),
     time: '18:30 - 20:30',
     location: 'WeWork Sandton, Johannesburg, ZA',
     attendeeCount: 32,
@@ -136,7 +147,11 @@ export const sampleEvents: Event[] = [
     title: 'Live: Building Real-time Applications with WebSockets',
     description:
       'Join us live as we build a real-time chat application using WebSockets, Node.js, and React. Watch the development process in real-time and ask questions!',
-    date: 'Now Live',
+    date: new Date().toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }),
     time: 'Live Now',
     location: 'Online',
     attendeeCount: 156,
@@ -160,7 +175,11 @@ export const sampleEvents: Event[] = [
     title: 'Live: Q&A Session: Career in Tech',
     description:
       'Live Q&A session with industry professionals. Ask questions about breaking into tech, career progression, salary negotiations, and more!',
-    date: 'Now Live',
+    date: new Date().toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }),
     time: 'Live Now',
     location: 'Online',
     attendeeCount: 89,
