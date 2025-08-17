@@ -4,6 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import {
   CalendarDays,
   MapPin,
   Users,
@@ -11,26 +19,20 @@ import {
   ExternalLink,
   Share2,
   Bookmark,
-  ArrowLeft,
   Video,
   User,
   Building,
 } from 'lucide-react';
 import { sampleEvents } from '@/data/data';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useState } from 'react';
 
 export default function EventDetailsPage() {
   const params = useParams();
-  const router = useRouter();
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   // Find the event by ID (in a real app, this would be a database query)
   const event = sampleEvents.find((e) => e.id === params.id) || sampleEvents[0];
-
-  const handleBack = () => {
-    router.back();
-  };
 
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);
@@ -55,14 +57,21 @@ export default function EventDetailsPage() {
       <div className="border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={handleBack}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/">Events</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{event.title}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
