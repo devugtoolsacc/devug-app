@@ -54,25 +54,28 @@ export default function Home() {
 
       {/* Live Events Section */}
       {liveEvents.length > 0 && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            <h2 className="text-2xl font-semibold text-foreground">Live Now</h2>
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <h2 className="text-xl font-medium text-foreground">Live Now</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {liveEvents.map((event) => (
               <Card
                 key={event.id}
-                className="border-2 border-red-200 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20"
+                className="border border-red-200/50 bg-red-50/30 dark:bg-red-950/10 hover:shadow-md transition-shadow"
               >
-                <CardHeader className="space-y-2">
+                <CardHeader className="space-y-2 pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Badge variant="destructive" className="animate-pulse">
+                      <Badge
+                        variant="secondary"
+                        className="text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                      >
                         LIVE
                       </Badge>
-                      <CardTitle className="text-xl text-foreground">
+                      <CardTitle className="text-lg text-foreground">
                         {event.title}
                       </CardTitle>
                     </div>
@@ -80,12 +83,12 @@ export default function Home() {
                       <Settings className="h-4 w-4" />
                     </Button>
                   </div>
-                  <p className="text-sm text-foreground leading-normal">
+                  <p className="text-sm text-muted-foreground leading-normal">
                     {event.description}
                   </p>
                 </CardHeader>
 
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 pt-0">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Users className="h-4 w-4" />
@@ -97,13 +100,13 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="text-base text-muted-foreground">
+                  <div className="text-sm text-muted-foreground">
                     {event.price}
                   </div>
                 </CardContent>
 
-                <CardFooter>
-                  <Button className="w-full" variant="destructive">
+                <CardFooter className="pt-0">
+                  <Button className="w-full" size="sm" variant="outline">
                     <Video className="h-4 w-4 mr-2" />
                     Join Live Stream
                   </Button>
