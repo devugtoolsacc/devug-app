@@ -10,15 +10,6 @@ const links = [
     label: 'Home',
     href: '/',
   },
-
-  {
-    label: 'Event Details',
-    href: '/event-details',
-  },
-  {
-    label: 'Sessions',
-    href: '/sessions',
-  },
 ];
 
 export default function Header() {
