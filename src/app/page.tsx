@@ -138,7 +138,7 @@ export default function Home() {
 
         {/* Events Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {upcomingEvents.map((event, index) => (
+          {upcomingEvents.map((event) => (
             <Card
               key={event.id}
               className="border border-border cursor-pointer hover:shadow-md transition-shadow"
@@ -222,8 +222,9 @@ export default function Home() {
             <p className="text-muted-foreground leading-relaxed">
               DevUG brings together developers from all backgrounds to share
               knowledge, explore cutting-edge technologies, and build meaningful
-              connections. Whether you're a seasoned professional or just
-              starting your journey, there's a place for you in our community.
+              connections. Whether you&apos;re a seasoned professional or just
+              starting your journey, there&apos;s a place for you in our
+              community.
             </p>
           </div>
           <div className="space-y-4">
