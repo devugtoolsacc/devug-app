@@ -12,7 +12,21 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { ChevronDown, Star, Hand, CheckSquare, X } from 'lucide-react';
+import {
+  ChevronDown,
+  Star,
+  Hand,
+  CheckSquare,
+  X,
+  Play,
+  Clock,
+  Users,
+  Mic,
+  Coffee,
+  Megaphone,
+} from 'lucide-react';
+
+type SessionType = 'announcement' | 'break' | 'talk';
 
 interface SessionFeedback {
   rating: number;
@@ -24,16 +38,29 @@ interface Question {
   id: number;
   text: string;
   author: string;
+  sessionId: number;
   isHandRaise?: boolean;
+  timestamp: Date;
 }
 
 interface SessionData {
   id: number;
-  name: string;
+  title: string;
+  type: SessionType;
+  startTime: Date;
+  endTime: Date;
   completed: boolean;
   isActive: boolean;
-  timeRemaining: number; // in seconds
   open: boolean;
+  speaker?: {
+    name: string;
+    avatar: string;
+    role: string;
+  };
+  description?: string;
+  videoLink?: string;
+  questions: Question[];
+  feedback: SessionFeedback;
 }
 
 const predefinedTags = [
@@ -42,18 +69,49 @@ const predefinedTags = [
   'Great presentation',
   'Clear explanation',
   'Engaging',
+  'Informative',
+  'Well organized',
+  'Good pace',
 ];
 
-function Timer({ timeRemaining }: { timeRemaining: number }) {
-  const minutes = Math.floor(timeRemaining / 60);
-  const seconds = timeRemaining % 60;
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
 
-  return (
-    <span>
-      {minutes} Minute{minutes !== 1 ? 's' : ''}{' '}
-      {seconds > 0 ? `${seconds}s` : ''} Remaining
-    </span>
-  );
+function formatDuration(startTime: Date, endTime: Date): string {
+  const durationMs = endTime.getTime() - startTime.getTime();
+  const minutes = Math.floor(durationMs / (1000 * 60));
+  return `${minutes} min`;
+}
+
+function getSessionTypeIcon(type: SessionType) {
+  switch (type) {
+    case 'announcement':
+      return <Megaphone className="h-5 w-5" />;
+    case 'break':
+      return <Coffee className="h-5 w-5" />;
+    case 'talk':
+      return <Mic className="h-5 w-5" />;
+    default:
+      return <Clock className="h-5 w-5" />;
+  }
+}
+
+function getSessionTypeColor(type: SessionType) {
+  switch (type) {
+    case 'announcement':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case 'break':
+      return 'bg-green-100 text-green-800 border-green-200';
+    case 'talk':
+      return 'bg-purple-100 text-purple-800 border-purple-200';
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
 }
 
 function HandRaiseIcon({
@@ -106,19 +164,13 @@ function StarRating({
 }
 
 function SessionFeedbackCard({
-  sessionName,
-  sessionNumber,
-  isEnabled,
+  session,
+  onFeedbackSubmit,
 }: {
-  sessionName: string;
-  sessionNumber: number;
-  isEnabled: boolean;
+  session: SessionData;
+  onFeedbackSubmit: (sessionId: number, feedback: SessionFeedback) => void;
 }) {
-  const [feedback, setFeedback] = useState<SessionFeedback>({
-    rating: 0,
-    tags: [],
-    comment: '',
-  });
+  const [feedback, setFeedback] = useState<SessionFeedback>(session.feedback);
 
   const toggleTag = (tag: string) => {
     setFeedback((prev) => ({
@@ -130,15 +182,14 @@ function SessionFeedbackCard({
   };
 
   const handleSubmit = () => {
-    console.log(`Session ${sessionNumber} feedback:`, feedback);
-    // Here you would typically submit to backend
+    onFeedbackSubmit(session.id, feedback);
   };
 
-  if (!isEnabled) {
+  if (!session.completed) {
     return (
       <Card className="border border-border opacity-50">
         <CardContent className="p-6 text-center">
-          <CardTitle className="mb-4">{sessionName}</CardTitle>
+          <CardTitle className="mb-4">{session.title}</CardTitle>
           <p className="text-muted-foreground">
             Feedback available after session completion
           </p>
@@ -150,7 +201,7 @@ function SessionFeedbackCard({
   return (
     <Card className="border border-border">
       <CardContent className="p-6 space-y-6">
-        <CardTitle className="text-center">{sessionName}</CardTitle>
+        <CardTitle className="text-center">{session.title}</CardTitle>
 
         <div className="text-center">
           <p className="text-lg mb-4">How was the session?</p>
@@ -204,54 +255,115 @@ export default function SessionPage() {
   const [sessions, setSessions] = useState<SessionData[]>([
     {
       id: 1,
-      name: 'Welcome',
+      title: 'Welcome & Opening Remarks',
+      type: 'announcement',
+      startTime: new Date('2024-01-15T09:00:00'),
+      endTime: new Date('2024-01-15T09:15:00'),
       completed: true,
       isActive: false,
-      timeRemaining: 0,
       open: false,
+      description:
+        "Welcome to our annual developer conference. We're excited to have you all here!",
+      questions: [],
+      feedback: { rating: 0, tags: [], comment: '' },
     },
     {
       id: 2,
-      name: 'Session 1',
+      title: 'Modern Web Development with React',
+      type: 'talk',
+      startTime: new Date('2024-01-15T09:15:00'),
+      endTime: new Date('2024-01-15T10:15:00'),
       completed: false,
       isActive: true,
-      timeRemaining: 120,
       open: true,
-    }, // 2 minutes
+      speaker: {
+        name: 'Thabiso Magwaza',
+        avatar: 'TM',
+        role: 'Senior Frontend Developer',
+      },
+      description:
+        'Explore the latest features in React 18 and how they can improve your development workflow.',
+      videoLink: 'https://meet.google.com/abc-defg-hij',
+      questions: [
+        {
+          id: 1,
+          text: 'Where do you work?',
+          author: 'Nathi',
+          sessionId: 2,
+          timestamp: new Date(),
+        },
+        {
+          id: 2,
+          text: 'Thabiso raise hand.',
+          author: 'System',
+          sessionId: 2,
+          isHandRaise: true,
+          timestamp: new Date(),
+        },
+        {
+          id: 3,
+          text: 'Does those even work?',
+          author: 'you',
+          sessionId: 2,
+          timestamp: new Date(),
+        },
+      ],
+      feedback: { rating: 0, tags: [], comment: '' },
+    },
     {
       id: 3,
-      name: 'Session 2',
+      title: 'Coffee Break',
+      type: 'break',
+      startTime: new Date('2024-01-15T10:15:00'),
+      endTime: new Date('2024-01-15T10:30:00'),
       completed: false,
       isActive: false,
-      timeRemaining: 900,
       open: false,
-    }, // 15 minutes
+      description:
+        'Take a short break, grab some coffee, and network with fellow developers.',
+      questions: [],
+      feedback: { rating: 0, tags: [], comment: '' },
+    },
+    {
+      id: 4,
+      title: 'Building Scalable APIs with Node.js',
+      type: 'talk',
+      startTime: new Date('2024-01-15T10:30:00'),
+      endTime: new Date('2024-01-15T11:30:00'),
+      completed: false,
+      isActive: false,
+      open: false,
+      speaker: {
+        name: 'Sarah Johnson',
+        avatar: 'SJ',
+        role: 'Backend Engineer',
+      },
+      description:
+        'Learn best practices for building robust and scalable APIs using Node.js and Express.',
+      videoLink: 'https://meet.google.com/xyz-uvw-rst',
+      questions: [],
+      feedback: { rating: 0, tags: [], comment: '' },
+    },
   ]);
 
-  const [openSessions, setOpenSessions] = useState<number[]>([2]); // Session 1 open by default
-  const [questions, setQuestions] = useState<Question[]>([
-    { id: 1, text: 'Where do you work?', author: 'Nathi' },
-    { id: 2, text: 'Thabiso raise hand.', author: 'System', isHandRaise: true },
-    { id: 3, text: 'Does those even work?', author: 'you' },
-  ]);
+  const [openSessions, setOpenSessions] = useState<number[]>([2]); // Session 2 open by default
   const [newQuestion, setNewQuestion] = useState('');
   const [isHandRaised, setIsHandRaised] = useState(false);
 
   // Timer effect for active sessions
   useEffect(() => {
     const interval = setInterval(() => {
+      const now = new Date();
       setSessions((prev) =>
         prev.map((session) => {
-          if (session.isActive && session.timeRemaining > 0) {
-            const newTimeRemaining = session.timeRemaining - 1;
-            return {
-              ...session,
-              timeRemaining: newTimeRemaining,
-              completed: newTimeRemaining === 0,
-              isActive: newTimeRemaining > 0,
-            };
-          }
-          return session;
+          const isActive = now >= session.startTime && now < session.endTime;
+          const completed = now >= session.endTime;
+
+          return {
+            ...session,
+            isActive,
+            completed,
+          };
         })
       );
     }, 1000);
@@ -267,40 +379,83 @@ export default function SessionPage() {
     );
   };
 
-  const handleAskQuestion = () => {
+  const handleAskQuestion = (sessionId: number) => {
     if (newQuestion.trim()) {
       const newQ: Question = {
         id: Date.now(),
         text: newQuestion,
         author: 'you',
+        sessionId,
+        timestamp: new Date(),
       };
-      setQuestions((prev) => [...prev, newQ]);
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === sessionId
+            ? { ...session, questions: [...session.questions, newQ] }
+            : session
+        )
+      );
       setNewQuestion('');
     }
   };
 
-  const handleRaiseHand = () => {
+  const handleRaiseHand = (sessionId: number) => {
     if (!isHandRaised) {
       const handRaiseQ: Question = {
         id: Date.now(),
         text: 'You raised your hand.',
         author: 'System',
+        sessionId,
         isHandRaise: true,
+        timestamp: new Date(),
       };
-      setQuestions((prev) => [...prev, handRaiseQ]);
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === sessionId
+            ? { ...session, questions: [...session.questions, handRaiseQ] }
+            : session
+        )
+      );
     } else {
-      setQuestions((prev) =>
-        prev.filter((q) => !(q.isHandRaise && q.author === 'System'))
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === sessionId
+            ? {
+                ...session,
+                questions: session.questions.filter(
+                  (q) => !(q.isHandRaise && q.author === 'System')
+                ),
+              }
+            : session
+        )
       );
     }
     setIsHandRaised(!isHandRaised);
   };
 
-  const removeQuestion = (questionId: number) => {
-    setQuestions((prev) => prev.filter((q) => q.id !== questionId));
-    if (questions.find((q) => q.id === questionId)?.isHandRaise) {
-      setIsHandRaised(false);
-    }
+  const removeQuestion = (sessionId: number, questionId: number) => {
+    setSessions((prev) =>
+      prev.map((session) =>
+        session.id === sessionId
+          ? {
+              ...session,
+              questions: session.questions.filter((q) => q.id !== questionId),
+            }
+          : session
+      )
+    );
+  };
+
+  const handleFeedbackSubmit = (
+    sessionId: number,
+    feedback: SessionFeedback
+  ) => {
+    setSessions((prev) =>
+      prev.map((session) =>
+        session.id === sessionId ? { ...session, feedback } : session
+      )
+    );
+    console.log(`Session ${sessionId} feedback:`, feedback);
   };
 
   const activeSession = sessions.find((s) => s.isActive);
@@ -309,7 +464,10 @@ export default function SessionPage() {
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Page Header */}
       <div className="text-center">
-        <h1 className="text-4xl text-foreground mb-8">Event 1</h1>
+        <h1 className="text-4xl text-foreground mb-8">DevUG Conference 2024</h1>
+        <p className="text-lg text-muted-foreground">
+          January 15, 2024 • Johannesburg, South Africa
+        </p>
       </div>
 
       {/* Sessions List */}
@@ -320,23 +478,41 @@ export default function SessionPage() {
             open={openSessions.includes(session.id)}
             onOpenChange={() => toggleSession(session.id)}
           >
-            <div className="border border-border">
+            <div className="border border-border rounded-lg">
               <CollapsibleTrigger className="w-full flex items-center justify-between p-6 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-4">
                   <Checkbox checked={session.completed} disabled />
-                  <h3 className="text-2xl text-foreground">
-                    {session.name}
-                    {session.isActive && session.timeRemaining > 0 && (
-                      <span className="ml-4 text-2xl">
-                        - <Timer timeRemaining={session.timeRemaining} />
-                      </span>
-                    )}
-                    {!session.isActive && !session.completed && (
-                      <span className="ml-4 text-2xl text-muted-foreground">
-                        - Pending Start
-                      </span>
-                    )}
-                  </h3>
+                  <div className="flex items-center gap-3">
+                    <Badge className={`${getSessionTypeColor(session.type)}`}>
+                      {getSessionTypeIcon(session.type)}
+                      <span className="ml-1 capitalize">{session.type}</span>
+                    </Badge>
+                    <div>
+                      <h3 className="text-xl text-foreground font-semibold">
+                        {session.title}
+                      </h3>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          {formatTime(session.startTime)} -{' '}
+                          {formatTime(session.endTime)}
+                        </span>
+                        <span>
+                          ({formatDuration(session.startTime, session.endTime)})
+                        </span>
+                        {session.isActive && (
+                          <span className="text-green-600 font-medium">
+                            • Live Now
+                          </span>
+                        )}
+                        {session.completed && (
+                          <span className="text-blue-600 font-medium">
+                            • Completed
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <ChevronDown
                   className={`h-6 w-6 transition-transform ${
@@ -347,107 +523,155 @@ export default function SessionPage() {
 
               <CollapsibleContent>
                 <div className="border-t border-border p-6">
-                  {session.isActive ? (
+                  {session.isActive || session.completed ? (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                      {/* Speaker Info */}
+                      {/* Session Info */}
                       <div className="lg:col-span-2 space-y-6">
-                        <div className="flex items-center gap-4">
-                          <Avatar className="h-12 w-12">
-                            <AvatarFallback>TM</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h4 className="font-medium">Thabiso Magwaza</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Speaker
-                            </p>
-                          </div>
-                        </div>
-
-                        <p className="text-foreground leading-relaxed">
-                          Lorem ipsum dolor sit amet, consectetur adipiscing
-                          elit. Proin ut tincidunt urna, eget malesuada dolor.
-                          Mauris tincidunt leo
-                        </p>
-
-                        {/* Question Input */}
-                        <div className="space-y-4">
-                          <h4 className="text-2xl text-foreground">Question</h4>
-                          <div className="flex gap-4 items-end">
-                            <div className="flex-1">
-                              <Input
-                                placeholder="Type your question"
-                                value={newQuestion}
-                                onChange={(e) => setNewQuestion(e.target.value)}
-                                onKeyPress={(e) =>
-                                  e.key === 'Enter' && handleAskQuestion()
-                                }
-                                className="min-h-[60px] text-lg"
-                              />
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={handleAskQuestion}
-                                disabled={!newQuestion.trim()}
-                                className="px-8 py-4"
-                              >
-                                Ask
-                              </Button>
-                              <HandRaiseIcon
-                                isRaised={isHandRaised}
-                                onClick={handleRaiseHand}
-                              />
+                        {session.speaker && (
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-12 w-12">
+                              <AvatarFallback>
+                                {session.speaker.avatar}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h4 className="font-medium">
+                                {session.speaker.name}
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                {session.speaker.role}
+                              </p>
                             </div>
                           </div>
-                        </div>
-                      </div>
+                        )}
 
-                      {/* Questions Panel */}
-                      <div className="space-y-4">
-                        <h4 className="text-2xl text-foreground">Questions</h4>
-                        <div className="space-y-2 max-h-96 overflow-y-auto">
-                          {questions.map((question, index) => (
-                            <div
-                              key={question.id}
-                              className="flex items-start justify-between gap-2 p-2 rounded border"
+                        {session.description && (
+                          <p className="text-foreground leading-relaxed">
+                            {session.description}
+                          </p>
+                        )}
+
+                        {session.videoLink && (
+                          <div className="space-y-2">
+                            <h4 className="text-lg font-medium">
+                              Watch Online
+                            </h4>
+                            <Button
+                              onClick={() =>
+                                window.open(session.videoLink, '_blank')
+                              }
+                              className="flex items-center gap-2"
                             >
-                              <div className="flex-1">
-                                <span className="text-sm">
-                                  {index + 1}. {question.text} -{' '}
-                                  {question.author}
-                                </span>
-                              </div>
-                              <div className="flex gap-1">
-                                {question.author === 'you' && (
-                                  <>
-                                    <button
-                                      onClick={() =>
-                                        removeQuestion(question.id)
-                                      }
-                                      className="text-muted-foreground hover:text-foreground p-1"
-                                    >
-                                      <CheckSquare className="h-4 w-4" />
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        removeQuestion(question.id)
-                                      }
-                                      className="text-muted-foreground hover:text-destructive p-1"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </button>
-                                  </>
-                                )}
+                              <Play className="h-4 w-4" />
+                              Join Stream
+                            </Button>
+                          </div>
+                        )}
+
+                        {/* Question Input - Only for talk sessions */}
+                        {session.type === 'talk' &&
+                          (session.isActive || session.completed) && (
+                            <div className="space-y-4">
+                              <h4 className="text-xl text-foreground">
+                                Ask a Question
+                              </h4>
+                              <div className="flex gap-4 items-end">
+                                <div className="flex-1">
+                                  <Input
+                                    placeholder="Type your question"
+                                    value={newQuestion}
+                                    onChange={(e) =>
+                                      setNewQuestion(e.target.value)
+                                    }
+                                    onKeyPress={(e) =>
+                                      e.key === 'Enter' &&
+                                      handleAskQuestion(session.id)
+                                    }
+                                    className="min-h-[60px] text-lg"
+                                  />
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() =>
+                                      handleAskQuestion(session.id)
+                                    }
+                                    disabled={!newQuestion.trim()}
+                                    className="px-8 py-4"
+                                  >
+                                    Ask
+                                  </Button>
+                                  <HandRaiseIcon
+                                    isRaised={isHandRaised}
+                                    onClick={() => handleRaiseHand(session.id)}
+                                  />
+                                </div>
                               </div>
                             </div>
-                          ))}
-                        </div>
+                          )}
                       </div>
+
+                      {/* Questions Panel - Only for talk sessions */}
+                      {session.type === 'talk' && (
+                        <div className="space-y-4">
+                          <h4 className="text-xl text-foreground">Questions</h4>
+                          <div className="space-y-2 max-h-96 overflow-y-auto">
+                            {session.questions.length === 0 ? (
+                              <p className="text-muted-foreground text-center py-4">
+                                No questions yet. Be the first to ask!
+                              </p>
+                            ) : (
+                              session.questions.map((question, index) => (
+                                <div
+                                  key={question.id}
+                                  className="flex items-start justify-between gap-2 p-3 rounded border"
+                                >
+                                  <div className="flex-1">
+                                    <span className="text-sm">
+                                      {index + 1}. {question.text} -{' '}
+                                      {question.author}
+                                    </span>
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                      {question.timestamp.toLocaleTimeString()}
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-1">
+                                    {question.author === 'you' && (
+                                      <>
+                                        <button
+                                          onClick={() =>
+                                            removeQuestion(
+                                              session.id,
+                                              question.id
+                                            )
+                                          }
+                                          className="text-muted-foreground hover:text-foreground p-1"
+                                        >
+                                          <CheckSquare className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            removeQuestion(
+                                              session.id,
+                                              question.id
+                                            )
+                                          }
+                                          className="text-muted-foreground hover:text-destructive p-1"
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <p className="text-muted-foreground">
-                      {session.completed
-                        ? 'Session completed.'
-                        : 'Session content will be available when started.'}
+                      Session content will be available when started.
                     </p>
                   )}
                 </div>
@@ -457,19 +681,22 @@ export default function SessionPage() {
         ))}
       </div>
 
-      {/* Feedback Section */}
+      {/* Feedback Section - Only for completed sessions */}
       <div className="space-y-6">
-        <h2 className="text-3xl text-center text-foreground">Feedback</h2>
+        <h2 className="text-3xl text-center text-foreground">
+          Session Feedback
+        </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sessions.map((session) => (
-            <SessionFeedbackCard
-              key={`feedback-${session.id}`}
-              sessionName={session.name}
-              sessionNumber={session.id}
-              isEnabled={session.completed}
-            />
-          ))}
+          {sessions
+            .filter((session) => session.completed)
+            .map((session) => (
+              <SessionFeedbackCard
+                key={`feedback-${session.id}`}
+                session={session}
+                onFeedbackSubmit={handleFeedbackSubmit}
+              />
+            ))}
         </div>
       </div>
     </div>
