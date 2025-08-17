@@ -92,13 +92,13 @@ function formatDuration(startTime: Date, endTime: Date): string {
 function getSessionTypeIcon(type: SessionType) {
   switch (type) {
     case 'announcement':
-      return <Megaphone className="h-4 w-4 sm:h-5 sm:w-5" />;
+      return <Megaphone className="h-5 w-5" />;
     case 'break':
-      return <Coffee className="h-4 w-4 sm:h-5 sm:w-5" />;
+      return <Coffee className="h-5 w-5" />;
     case 'talk':
-      return <Mic className="h-4 w-4 sm:h-5 sm:w-5" />;
+      return <Mic className="h-5 w-5" />;
     default:
-      return <Clock className="h-4 w-4 sm:h-5 sm:w-5" />;
+      return <Clock className="h-5 w-5" />;
   }
 }
 
@@ -125,13 +125,13 @@ function HandRaiseIcon({
   return (
     <button
       onClick={onClick}
-      className={`p-3 sm:p-4 rounded-full transition-colors min-w-[48px] min-h-[48px] sm:min-w-[56px] sm:min-h-[56px] ${
+      className={`p-4 rounded-full transition-colors ${
         isRaised
           ? 'bg-primary text-primary-foreground'
           : 'bg-muted hover:bg-muted/80'
       }`}
     >
-      <Hand className="h-6 w-6 sm:h-8 sm:w-8" />
+      <Hand className="h-8 w-8" />
     </button>
   );
 }
@@ -149,10 +149,10 @@ function StarRating({
         <button
           key={star}
           onClick={() => onRatingChange(star)}
-          className="p-1 hover:scale-110 transition-transform min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="p-1 hover:scale-110 transition-transform"
         >
           <Star
-            className={`h-8 w-8 sm:h-10 sm:w-10 ${
+            className={`h-10 w-10 ${
               star <= rating
                 ? 'fill-primary stroke-primary'
                 : 'stroke-muted-foreground'
@@ -189,11 +189,9 @@ function SessionFeedbackCard({
   if (!session.completed) {
     return (
       <Card className="border border-border opacity-50">
-        <CardContent className="p-4 sm:p-6 text-center">
-          <CardTitle className="mb-4 text-lg sm:text-xl">
-            {session.title}
-          </CardTitle>
-          <p className="text-muted-foreground text-sm sm:text-base">
+        <CardContent className="p-6 text-center">
+          <CardTitle className="mb-4">{session.title}</CardTitle>
+          <p className="text-muted-foreground">
             Feedback available after session completion
           </p>
         </CardContent>
@@ -203,13 +201,11 @@ function SessionFeedbackCard({
 
   return (
     <Card className="border border-border">
-      <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-        <CardTitle className="text-center text-lg sm:text-xl">
-          {session.title}
-        </CardTitle>
+      <CardContent className="p-6 space-y-6">
+        <CardTitle className="text-center">{session.title}</CardTitle>
 
         <div className="text-center">
-          <p className="text-base sm:text-lg mb-4">How was the session?</p>
+          <p className="text-lg mb-4">How was the session?</p>
           <StarRating
             rating={feedback.rating}
             onRatingChange={(rating) =>
@@ -225,7 +221,7 @@ function SessionFeedbackCard({
                 <Badge
                   key={tag}
                   variant={feedback.tags.includes(tag) ? 'default' : 'outline'}
-                  className="cursor-pointer hover:scale-105 transition-transform text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-1"
+                  className="cursor-pointer hover:scale-105 transition-transform"
                   onClick={() => toggleTag(tag)}
                 >
                   {tag}
@@ -239,14 +235,14 @@ function SessionFeedbackCard({
               onChange={(e) =>
                 setFeedback((prev) => ({ ...prev, comment: e.target.value }))
               }
-              className="min-h-[80px] text-sm sm:text-base"
+              className="min-h-[80px]"
             />
           </div>
         )}
 
         <Button
           onClick={handleSubmit}
-          className="w-full h-12 sm:h-10 text-base sm:text-sm"
+          className="w-full"
           disabled={feedback.rating === 0}
         >
           Submit
@@ -298,12 +294,10 @@ export default function SessionPage() {
 
   if (!event) {
     return (
-      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto space-y-8">
         <div className="text-center">
-          <h1 className="text-2xl sm:text-4xl text-foreground mb-4 sm:mb-8">
-            Event Not Found
-          </h1>
-          <p className="text-base sm:text-lg text-muted-foreground">
+          <h1 className="text-4xl text-foreground mb-8">Event Not Found</h1>
+          <p className="text-lg text-muted-foreground">
             The event you&apos;re looking for doesn&apos;t exist.
           </p>
         </div>
@@ -399,19 +393,17 @@ export default function SessionPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 px-4 sm:px-6">
+    <div className="max-w-7xl mx-auto space-y-8">
       {/* Page Header */}
       <div className="text-center">
-        <h1 className="text-2xl sm:text-4xl text-foreground mb-4 sm:mb-8">
-          {event.title}
-        </h1>
-        <p className="text-base sm:text-lg text-muted-foreground">
+        <h1 className="text-4xl text-foreground mb-8">{event.title}</h1>
+        <p className="text-lg text-muted-foreground">
           {event.date} • {event.location}
         </p>
       </div>
 
       {/* Sessions List */}
-      <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-4">
         {sessions.map((session) => (
           <Collapsible
             key={session.id}
@@ -419,29 +411,21 @@ export default function SessionPage() {
             onOpenChange={() => toggleSession(session.id)}
           >
             <div className="border border-border rounded-lg">
-              <CollapsibleTrigger className="w-full flex items-center justify-between p-4 sm:p-6 hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                  <Checkbox
-                    checked={session.completed}
-                    disabled
-                    className="flex-shrink-0"
-                  />
-                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                    <Badge
-                      className={`${getSessionTypeColor(session.type)} text-xs sm:text-sm flex-shrink-0`}
-                    >
+              <CollapsibleTrigger className="w-full flex items-center justify-between p-6 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <Checkbox checked={session.completed} disabled />
+                  <div className="flex items-center gap-3">
+                    <Badge className={`${getSessionTypeColor(session.type)}`}>
                       {getSessionTypeIcon(session.type)}
-                      <span className="ml-1 capitalize hidden sm:inline">
-                        {session.type}
-                      </span>
+                      <span className="ml-1 capitalize">{session.type}</span>
                     </Badge>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base sm:text-xl text-foreground font-semibold truncate">
+                    <div>
+                      <h3 className="text-xl text-foreground font-semibold">
                         {session.title}
                       </h3>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <Clock className="h-4 w-4" />
                           {formatTime(session.startTime)} -{' '}
                           {formatTime(session.endTime)}
                         </span>
@@ -463,30 +447,30 @@ export default function SessionPage() {
                   </div>
                 </div>
                 <ChevronDown
-                  className={`h-5 w-5 sm:h-6 sm:w-6 transition-transform flex-shrink-0 ${
+                  className={`h-6 w-6 transition-transform ${
                     openSessions.includes(session.id) ? 'rotate-180' : ''
                   }`}
                 />
               </CollapsibleTrigger>
 
               <CollapsibleContent>
-                <div className="border-t border-border p-4 sm:p-6">
+                <div className="border-t border-border p-6">
                   {session.isActive || session.completed ? (
-                    <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                       {/* Session Info */}
-                      <div className="space-y-4 sm:space-y-6">
+                      <div className="lg:col-span-2 space-y-6">
                         {session.speaker && (
-                          <div className="flex items-center gap-3 sm:gap-4">
-                            <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-12 w-12">
                               <AvatarFallback>
                                 {session.speaker.avatar}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <h4 className="font-medium text-sm sm:text-base">
+                              <h4 className="font-medium">
                                 {session.speaker.name}
                               </h4>
-                              <p className="text-xs sm:text-sm text-muted-foreground">
+                              <p className="text-sm text-muted-foreground">
                                 {session.speaker.role}
                               </p>
                             </div>
@@ -494,21 +478,21 @@ export default function SessionPage() {
                         )}
 
                         {session.description && (
-                          <p className="text-foreground leading-relaxed text-sm sm:text-base">
+                          <p className="text-foreground leading-relaxed">
                             {session.description}
                           </p>
                         )}
 
                         {session.videoLink && (
                           <div className="space-y-2">
-                            <h4 className="text-base sm:text-lg font-medium">
+                            <h4 className="text-lg font-medium">
                               Watch Online
                             </h4>
                             <Button
                               onClick={() =>
                                 window.open(session.videoLink, '_blank')
                               }
-                              className="flex items-center gap-2 w-full sm:w-auto h-12 sm:h-10"
+                              className="flex items-center gap-2"
                             >
                               <Play className="h-4 w-4" />
                               Join Stream
@@ -520,10 +504,10 @@ export default function SessionPage() {
                         {session.type === 'talk' &&
                           (session.isActive || session.completed) && (
                             <div className="space-y-4">
-                              <h4 className="text-lg sm:text-xl text-foreground">
+                              <h4 className="text-xl text-foreground">
                                 Ask a Question
                               </h4>
-                              <div className="space-y-3 sm:space-y-0 sm:flex sm:gap-4 sm:items-end">
+                              <div className="flex gap-4 items-end">
                                 <div className="flex-1">
                                   <Input
                                     placeholder="Type your question"
@@ -535,16 +519,16 @@ export default function SessionPage() {
                                       e.key === 'Enter' &&
                                       handleAskQuestion(session.id)
                                     }
-                                    className="min-h-[48px] sm:min-h-[60px] text-base sm:text-lg"
+                                    className="min-h-[60px] text-lg"
                                   />
                                 </div>
-                                <div className="flex gap-2 justify-center sm:justify-start">
+                                <div className="flex gap-2">
                                   <Button
                                     onClick={() =>
                                       handleAskQuestion(session.id)
                                     }
                                     disabled={!newQuestion.trim()}
-                                    className="px-6 sm:px-8 py-3 sm:py-4 h-12 sm:h-10 text-base sm:text-sm"
+                                    className="px-8 py-4"
                                   >
                                     Ask
                                   </Button>
@@ -561,12 +545,10 @@ export default function SessionPage() {
                       {/* Questions Panel - Only for talk sessions */}
                       {session.type === 'talk' && (
                         <div className="space-y-4">
-                          <h4 className="text-lg sm:text-xl text-foreground">
-                            Questions
-                          </h4>
-                          <div className="space-y-2 max-h-64 sm:max-h-96 overflow-y-auto">
+                          <h4 className="text-xl text-foreground">Questions</h4>
+                          <div className="space-y-2 max-h-96 overflow-y-auto">
                             {session.questions.length === 0 ? (
-                              <p className="text-muted-foreground text-center py-4 text-sm sm:text-base">
+                              <p className="text-muted-foreground text-center py-4">
                                 No questions yet. Be the first to ask!
                               </p>
                             ) : (
@@ -575,8 +557,8 @@ export default function SessionPage() {
                                   key={question.id}
                                   className="flex items-start justify-between gap-2 p-3 rounded border"
                                 >
-                                  <div className="flex-1 min-w-0">
-                                    <span className="text-xs sm:text-sm break-words">
+                                  <div className="flex-1">
+                                    <span className="text-sm">
                                       {index + 1}. {question.text} -{' '}
                                       {question.author}
                                     </span>
@@ -584,7 +566,7 @@ export default function SessionPage() {
                                       {question.timestamp.toLocaleTimeString()}
                                     </div>
                                   </div>
-                                  <div className="flex gap-1 flex-shrink-0">
+                                  <div className="flex gap-1">
                                     {question.author === 'you' && (
                                       <>
                                         <button
@@ -594,7 +576,7 @@ export default function SessionPage() {
                                               question.id
                                             )
                                           }
-                                          className="text-muted-foreground hover:text-foreground p-2 sm:p-1 min-w-[44px] min-h-[44px] sm:min-w-[32px] sm:min-h-[32px] flex items-center justify-center"
+                                          className="text-muted-foreground hover:text-foreground p-1"
                                         >
                                           <CheckSquare className="h-4 w-4" />
                                         </button>
@@ -605,7 +587,7 @@ export default function SessionPage() {
                                               question.id
                                             )
                                           }
-                                          className="text-muted-foreground hover:text-destructive p-2 sm:p-1 min-w-[44px] min-h-[44px] sm:min-w-[32px] sm:min-h-[32px] flex items-center justify-center"
+                                          className="text-muted-foreground hover:text-destructive p-1"
                                         >
                                           <X className="h-4 w-4" />
                                         </button>
@@ -620,7 +602,7 @@ export default function SessionPage() {
                       )}
                     </div>
                   ) : (
-                    <p className="text-muted-foreground text-sm sm:text-base">
+                    <p className="text-muted-foreground">
                       Session content will be available when started.
                     </p>
                   )}
@@ -632,12 +614,12 @@ export default function SessionPage() {
       </div>
 
       {/* Feedback Section - Only for completed sessions */}
-      <div className="space-y-4 sm:space-y-6">
-        <h2 className="text-2xl sm:text-3xl text-center text-foreground">
+      <div className="space-y-6">
+        <h2 className="text-3xl text-center text-foreground">
           Session Feedback
         </h2>
 
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sessions
             .filter((session) => session.completed)
             .map((session) => (
