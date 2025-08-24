@@ -116,9 +116,16 @@ export default function Home() {
                 </CardContent>
 
                 <CardFooter className="pt-0">
-                  <Button className="w-full" size="sm" variant="outline">
-                    <Video className="h-4 w-4 mr-2" />
-                    Join Live Stream
+                  <Button
+                    className="w-full"
+                    size="sm"
+                    variant="outline"
+                    asChild
+                  >
+                    <Link href={`/event/${event._id}/session`}>
+                      <Video className="h-4 w-4 mr-2" />
+                      Join Event
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>

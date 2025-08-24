@@ -48,8 +48,8 @@ export default function EventDetailsPage() {
   };
 
   const isEventLive = event?.isLive;
-  const isToday = isEventToday();
-  const canJoin = isEventLive || isToday;
+  // const isToday = isEventToday();
+  const canJoin = isEventLive;
 
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);
