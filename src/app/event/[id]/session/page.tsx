@@ -423,7 +423,7 @@ export default function SessionPage() {
             <div className="border border-border rounded-lg">
               <CollapsibleTrigger className="w-full flex items-center justify-between p-6 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-4">
-                  <Checkbox checked={session.completed} disabled />
+                  {/* <Checkbox checked={session.completed} disabled /> */}
                   <div className="flex items-center gap-3">
                     <Badge className={`${getSessionTypeColor(session.type)}`}>
                       {getSessionTypeIcon(session.type)}
@@ -498,7 +498,7 @@ export default function SessionPage() {
                           </p>
                         )}
 
-                        {session.videoLink && (
+                        {session.videoLink && session.isActive && (
                           <div className="space-y-2">
                             <h4 className="text-lg font-medium">
                               Watch Online
