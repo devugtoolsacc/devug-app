@@ -277,10 +277,13 @@ export default function SessionPage() {
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
+      const nowTime = now.getTime();
+
       setSessions((prev) =>
         prev.map((session) => {
-          const isActive = now >= session.startTime && now < session.endTime;
-          const completed = now >= session.endTime;
+          const isActive =
+            nowTime >= session.startTime && nowTime < session.endTime;
+          const completed = nowTime >= session.endTime;
 
           return {
             ...session,
@@ -399,11 +402,16 @@ export default function SessionPage() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          {formatTime(session.startTime)} -{' '}
-                          {formatTime(session.endTime)}
+                          {formatTime(new Date(session.startTime))} -{' '}
+                          {formatTime(new Date(session.endTime))}
                         </span>
                         <span>
-                          ({formatDuration(session.startTime, session.endTime)})
+                          (
+                          {formatDuration(
+                            new Date(session.startTime),
+                            new Date(session.endTime)
+                          )}
+                          )
                         </span>
                         {session.isActive && (
                           <span className="text-green-600 font-medium">
@@ -536,7 +544,9 @@ export default function SessionPage() {
                                       {question.author}
                                     </span>
                                     <div className="text-xs text-muted-foreground mt-1">
-                                      {question.timestamp.toLocaleTimeString()}
+                                      {new Date(
+                                        question.timestamp
+                                      ).toLocaleTimeString()}
                                     </div>
                                   </div>
                                   <div className="flex gap-1">

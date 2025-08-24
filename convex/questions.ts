@@ -12,7 +12,7 @@ export const getBySessionId = query({
 
     return questions.map((q) => ({
       ...q,
-      timestamp: new Date(q.timestamp),
+      timestamp: q.timestamp,
     }));
   },
 });

@@ -25,11 +25,11 @@ export const getByEventId = query({
 
         return {
           ...session,
-          startTime: new Date(session.startTime),
-          endTime: new Date(session.endTime),
+          startTime: session.startTime,
+          endTime: session.endTime,
           questions: questions.map((q) => ({
             ...q,
-            timestamp: new Date(q.timestamp),
+            timestamp: q.timestamp,
           })),
           feedback:
             feedback.length > 0
@@ -66,11 +66,11 @@ export const getById = query({
 
     return {
       ...session,
-      startTime: new Date(session.startTime),
-      endTime: new Date(session.endTime),
+      startTime: session.startTime,
+      endTime: session.endTime,
       questions: questions.map((q) => ({
         ...q,
-        timestamp: new Date(q.timestamp),
+        timestamp: q.timestamp,
       })),
       feedback:
         feedback.length > 0
