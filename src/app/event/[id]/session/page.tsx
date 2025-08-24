@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useCreateQuestion, useEvents } from '@/data/data';
+import { api } from '../../../../../convex/_generated/api';
+import { useMutation } from 'convex/react';
 
 // type SessionType = 'announcement' | 'break' | 'talk';
 
@@ -258,44 +260,56 @@ export default function SessionPage() {
   const events = useEvents();
   const askQuestion = useCreateQuestion();
 
+  const removeQuestionMutation = useMutation(api.questions.remove);
+
   // Find the event by ID
   const event = events?.find((e) => e.id === eventId);
 
   // Convert event sessions to SessionData format and add open state
-  const [sessions, setSessions] = useState(
-    event?.sessions?.map((session) => ({
-      ...session,
-      open: session.isActive, // Add open state for collapsible
-    })) || []
-  );
+  // const [sessions, setSessions] = useState(
+  //   event?.sessions?.map((session) => ({
+  //     ...session,
+  //     open: session.isActive, // Add open state for collapsible
+  //   })) || []
+  // );
 
   const [openSessions, setOpenSessions] = useState<number[]>([]);
   const [newQuestion, setNewQuestion] = useState('');
   const [isHandRaised, setIsHandRaised] = useState(false);
 
-  // Timer effect for active sessions
   useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      const nowTime = now.getTime();
+    if (!event) return;
 
-      setSessions((prev) =>
-        prev.map((session) => {
-          const isActive =
-            nowTime >= session.startTime && nowTime < session.endTime;
-          const completed = nowTime >= session.endTime;
+    setOpenSessions(
+      event.sessions
+        .filter((session) => session.isActive)
+        .map((session) => session.id)
+    );
+  }, [event]);
 
-          return {
-            ...session,
-            isActive,
-            completed,
-          };
-        })
-      );
-    }, 1000);
+  // Timer effect for active sessions
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const now = new Date();
+  //     const nowTime = now.getTime();
 
-    return () => clearInterval(interval);
-  }, []);
+  //     setSessions((prev) =>
+  //       prev.map((session) => {
+  //         const isActive =
+  //           nowTime >= session.startTime && nowTime < session.endTime;
+  //         const completed = nowTime >= session.endTime;
+
+  //         return {
+  //           ...session,
+  //           isActive,
+  //           completed,
+  //         };
+  //       })
+  //     );
+  //   }, 1000);
+
+  //   return () => clearInterval(interval);
+  // }, []);
 
   if (!event) {
     return (
@@ -343,17 +357,8 @@ export default function SessionPage() {
     setIsHandRaised(!isHandRaised);
   };
 
-  const removeQuestion = (sessionId: number, questionId: number) => {
-    setSessions((prev) =>
-      prev.map((session) =>
-        session.id === sessionId
-          ? {
-              ...session,
-              questions: session.questions.filter((q) => q.id !== questionId),
-            }
-          : session
-      )
-    );
+  const removeQuestion = async (questionId: number) => {
+    await removeQuestionMutation({ id: questionId });
   };
 
   // const handleFeedbackSubmit = (
@@ -380,7 +385,7 @@ export default function SessionPage() {
 
       {/* Sessions List */}
       <div className="space-y-4">
-        {sessions.map((session) => (
+        {event?.sessions.map((session) => (
           <Collapsible
             key={session.id}
             open={openSessions.includes(session.id)}
@@ -554,10 +559,7 @@ export default function SessionPage() {
                                       <>
                                         <button
                                           onClick={() =>
-                                            removeQuestion(
-                                              session.id,
-                                              question.id
-                                            )
+                                            removeQuestion(question.id)
                                           }
                                           className="text-muted-foreground hover:text-foreground p-1"
                                         >
@@ -565,10 +567,7 @@ export default function SessionPage() {
                                         </button>
                                         <button
                                           onClick={() =>
-                                            removeQuestion(
-                                              session.id,
-                                              question.id
-                                            )
+                                            removeQuestion(question.id)
                                           }
                                           className="text-muted-foreground hover:text-destructive p-1"
                                         >
