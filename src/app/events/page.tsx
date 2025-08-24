@@ -175,8 +175,15 @@ export default function EventsPage() {
                         {event.category}
                       </Badge>
                     </div>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <Settings className="h-4 w-4" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      asChild
+                    >
+                      <Link href={`/event/${event._id}/manage`}>
+                        <Settings className="h-4 w-4" />
+                      </Link>
                     </Button>
                   </div>
                   <CardTitle className="text-lg text-foreground">
@@ -249,8 +256,15 @@ export default function EventsPage() {
                             : event.title}
                         </CardTitle>
                       </div>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Settings className="h-4 w-4" />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        asChild
+                      >
+                        <Link href={`/event/${event._id}/manage`}>
+                          <Settings className="h-4 w-4" />
+                        </Link>
                       </Button>
                     </div>
                     <p className="text-sm text-foreground leading-normal">
@@ -332,8 +346,11 @@ export default function EventsPage() {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0"
+                            asChild
                           >
-                            <Settings className="h-4 w-4" />
+                            <Link href={`/event/${event._id}/manage`}>
+                              <Settings className="h-4 w-4" />
+                            </Link>
                           </Button>
                         </div>
                         <p className="text-sm text-foreground leading-normal">

@@ -202,7 +202,7 @@ export const create = mutation({
 // Update an event
 export const update = mutation({
   args: {
-    id: v.id('events'),
+    _id: v.id('events'),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
     date: v.optional(v.string()),
@@ -228,7 +228,7 @@ export const update = mutation({
     featuredSessionId: v.optional(v.id('sessions')),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.patch(args.id, args);
+    return await ctx.db.patch(args._id, args);
   },
 });
 
