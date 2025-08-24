@@ -31,11 +31,11 @@ export const getAll = query({
             return {
               ...session,
               // Convert Unix timestamps back to Date objects for frontend compatibility
-              startTime: new Date(session.startTime),
-              endTime: new Date(session.endTime),
+              startTime: session.startTime,
+              endTime: session.endTime,
               questions: questions.map((q) => ({
                 ...q,
-                timestamp: new Date(q.timestamp),
+                timestamp: q.timestamp,
               })),
               feedback:
                 feedback.length > 0
