@@ -52,6 +52,7 @@ interface Session {
   type: 'talk' | 'break' | 'announcement';
   startTime: string;
   endTime: string;
+  duration: number; // Duration in minutes
   speaker?: {
     name: string;
     avatar: string;
@@ -105,6 +106,7 @@ export default function CreateEventPage() {
     type: 'talk',
     startTime: '',
     endTime: '',
+    duration: 30, // Duration in minutes
     speaker: undefined,
     description: '',
     videoLink: '',
@@ -119,6 +121,29 @@ export default function CreateEventPage() {
 
   // Tag input state
   const [tagInput, setTagInput] = useState('');
+
+  // Calculate the next available time slot for a new session
+  const getNextAvailableTimeSlot = () => {
+    if (sessions.length === 0) {
+      // First session starts at event time
+      return eventData.time;
+    }
+
+    // Get the end time of the last session
+    const lastSession = sessions[sessions.length - 1];
+    const lastEndTime = new Date(`2000-01-01T${lastSession.endTime}`);
+    return lastEndTime.toTimeString().slice(0, 5); // Return HH:MM format
+  };
+
+  // Calculate start and end times based on duration
+  const calculateSessionTimes = (duration: number) => {
+    const startTime = getNextAvailableTimeSlot();
+    const startDateTime = new Date(`2000-01-01T${startTime}`);
+    const endDateTime = new Date(startDateTime.getTime() + duration * 60000); // Add duration in minutes
+    const endTime = endDateTime.toTimeString().slice(0, 5); // Return HH:MM format
+
+    return { startTime, endTime };
+  };
 
   const getSessionTypeIcon = (type: string) => {
     switch (type) {
@@ -190,10 +215,13 @@ export default function CreateEventPage() {
   };
 
   const addSession = () => {
-    if (newSession.title.trim() && newSession.startTime && newSession.endTime) {
+    if (newSession.title.trim() && newSession.duration > 0) {
+      const { startTime, endTime } = calculateSessionTimes(newSession.duration);
       const sessionWithId = {
         ...newSession,
         id: Date.now().toString(),
+        startTime,
+        endTime,
       };
       setSessions((prev) => [...prev, sessionWithId]);
       setOpenSessions((prev) => [...prev, sessionWithId.id]);
@@ -203,6 +231,7 @@ export default function CreateEventPage() {
         type: 'talk',
         startTime: '',
         endTime: '',
+        duration: 30,
         speaker: undefined,
         description: '',
         videoLink: '',
@@ -238,12 +267,17 @@ export default function CreateEventPage() {
 
       // Create sessions for the event
       for (const session of sessions) {
+        // Convert time strings to Unix timestamps
+        const eventDate = eventData.date;
+        const startDateTime = new Date(`${eventDate}T${session.startTime}`);
+        const endDateTime = new Date(`${eventDate}T${session.endTime}`);
+
         await createSession({
           eventId,
           title: session.title,
           type: session.type,
-          startTime: new Date(session.startTime).getTime(),
-          endTime: new Date(session.endTime).getTime(),
+          startTime: startDateTime.getTime(),
+          endTime: endDateTime.getTime(),
           completed: false,
           isActive: false,
           speaker: session.speaker,
@@ -599,9 +633,17 @@ export default function CreateEventPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Schedule sessions for your event day
-            </p>
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Schedule sessions for your event day
+              </p>
+              {eventData.time && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Event starts at {eventData.time} • Sessions will be scheduled
+                  sequentially
+                </p>
+              )}
+            </div>
             <Dialog
               open={isSessionDialogOpen}
               onOpenChange={setIsSessionDialogOpen}
@@ -660,33 +702,41 @@ export default function CreateEventPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium">Start Time</label>
-                      <Input
-                        type="datetime-local"
-                        value={newSession.startTime}
-                        onChange={(e) =>
-                          setNewSession((prev) => ({
-                            ...prev,
-                            startTime: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">End Time</label>
-                      <Input
-                        type="datetime-local"
-                        value={newSession.endTime}
-                        onChange={(e) =>
-                          setNewSession((prev) => ({
-                            ...prev,
-                            endTime: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
+                  <div>
+                    <label className="text-sm font-medium">
+                      Duration (minutes)
+                    </label>
+                    <Select
+                      value={newSession.duration.toString()}
+                      onValueChange={(value) =>
+                        setNewSession((prev) => ({
+                          ...prev,
+                          duration: parseInt(value),
+                        }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="15">15 minutes</SelectItem>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                        <SelectItem value="45">45 minutes</SelectItem>
+                        <SelectItem value="60">1 hour</SelectItem>
+                        <SelectItem value="90">1.5 hours</SelectItem>
+                        <SelectItem value="120">2 hours</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Session will start at {getNextAvailableTimeSlot()} and end
+                      at{' '}
+                      {(() => {
+                        const { endTime } = calculateSessionTimes(
+                          newSession.duration
+                        );
+                        return endTime;
+                      })()}
+                    </p>
                   </div>
 
                   {newSession.type === 'talk' && (
@@ -802,7 +852,7 @@ export default function CreateEventPage() {
           {/* Sessions List */}
           {sessions.length > 0 ? (
             <div className="space-y-4">
-              {sessions.map((session) => (
+              {sessions.map((session, index) => (
                 <Collapsible
                   key={session.id}
                   open={openSessions.includes(session.id)}
@@ -812,6 +862,9 @@ export default function CreateEventPage() {
                     <CollapsibleTrigger className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
+                            {index + 1}
+                          </div>
                           <Badge
                             className={`${getSessionTypeColor(session.type)}`}
                           >
@@ -827,11 +880,8 @@ export default function CreateEventPage() {
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Clock className="h-4 w-4" />
-                                {new Date(
-                                  session.startTime
-                                ).toLocaleTimeString()}{' '}
-                                -{' '}
-                                {new Date(session.endTime).toLocaleTimeString()}
+                                {session.startTime} - {session.endTime} (
+                                {session.duration} min)
                               </span>
                               {session.speaker && (
                                 <span>by {session.speaker.name}</span>
