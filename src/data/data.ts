@@ -60,6 +60,10 @@ export const useAddQuestion = () => {
   return useMutation(api.questions.create);
 };
 
+export const useCreateSessionFeedback = () => {
+  return useMutation(api.sessionFeedback.create);
+};
+
 export const useUpdateSessionFeedback = () => {
   return useMutation(api.sessionFeedback.update);
 };

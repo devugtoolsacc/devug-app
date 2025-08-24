@@ -6,13 +6,16 @@
 
 [x] those events show up in the landing page
 
-[] create event manage page
-[] start the event
-[] start the session
+[x] create event manage page
+[x] start the event
+[x] start the session
 
-[] organiser can manage the event and the atendees can see the event progressing
+[x] organiser can manage the event and the atendees can see the event progressing
+
+[x] Feedback
 
 [] add auth (integrate clerk)
+[] add speaker journey
 [] speaker can submit talk
 
 [] Implement RSVP logic

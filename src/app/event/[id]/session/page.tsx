@@ -25,9 +25,12 @@ import {
   Megaphone,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useCreateQuestion, useDeleteQuestion, useEvents } from '@/data/data';
-import { api } from '../../../../../convex/_generated/api';
-import { useMutation } from 'convex/react';
+import {
+  useCreateQuestion,
+  useCreateSessionFeedback,
+  useDeleteQuestion,
+  useEvents,
+} from '@/data/data';
 import { Id } from '../../../../../convex/_generated/dataModel';
 
 // type SessionType = 'announcement' | 'break' | 'talk';
@@ -67,16 +70,16 @@ import { Id } from '../../../../../convex/_generated/dataModel';
 //   feedback: SessionFeedback;
 // }
 
-// const predefinedTags = [
-//   'Interesting topic',
-//   'Nice talk',
-//   'Great presentation',
-//   'Clear explanation',
-//   'Engaging',
-//   'Informative',
-//   'Well organized',
-//   'Good pace',
-// ];
+const predefinedTags = [
+  'Interesting topic',
+  'Nice talk',
+  'Great presentation',
+  'Clear explanation',
+  'Engaging',
+  'Informative',
+  'Well organized',
+  'Good pace',
+];
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString('en-US', {
@@ -167,99 +170,120 @@ function StarRating({
   );
 }
 
-// function SessionFeedbackCard({
-//   session,
-//   onFeedbackSubmit,
-// }: {
-//   session: Session;
-//   onFeedbackSubmit: (sessionId: number, feedback: SessionFeedback) => void;
-// }) {
-//   const [feedback, setFeedback] = useState<SessionFeedback>(session.feedback);
+function SessionFeedbackCard({
+  session,
+  onFeedbackSubmit,
+}: {
+  session: {
+    id: Id<'sessions'>;
+    title: string;
+    completed: boolean;
+    feedback: {
+      rating: number;
+      tags: string[];
+      comment: string;
+    };
+  };
+  onFeedbackSubmit: (
+    sessionId: Id<'sessions'>,
+    feedback: {
+      rating: number;
+      tags: string[];
+      comment: string;
+    }
+  ) => void;
+}) {
+  const [feedback, setFeedback] = useState<{
+    rating: number;
+    tags: string[];
+    comment: string;
+  }>(session.feedback);
 
-//   const toggleTag = (tag: string) => {
-//     setFeedback((prev) => ({
-//       ...prev,
-//       tags: prev.tags.includes(tag)
-//         ? prev.tags.filter((t) => t !== tag)
-//         : [...prev.tags, tag],
-//     }));
-//   };
+  const toggleTag = (tag: string) => {
+    setFeedback((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter((t) => t !== tag)
+        : [...prev.tags, tag],
+    }));
+  };
 
-//   const handleSubmit = () => {
-//     onFeedbackSubmit(session.id, feedback);
-//   };
+  const handleSubmit = () => {
+    onFeedbackSubmit(session.id, feedback);
+  };
 
-//   if (!session.completed) {
-//     return (
-//       <Card className="border border-border opacity-50">
-//         <CardContent className="p-6 text-center">
-//           <CardTitle className="mb-4">{session.title}</CardTitle>
-//           <p className="text-muted-foreground">
-//             Feedback available after session completion
-//           </p>
-//         </CardContent>
-//       </Card>
-//     );
-//   }
+  if (!session.completed) {
+    return (
+      <Card className="border border-border opacity-50">
+        <CardContent className="p-6 text-center">
+          <CardTitle className="mb-4">{session.title}</CardTitle>
+          <p className="text-muted-foreground">
+            Feedback available after session completion
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
-//   return (
-//     <Card className="border border-border">
-//       <CardContent className="p-6 space-y-6">
-//         <CardTitle className="text-center">{session.title}</CardTitle>
+  return (
+    <Card className="border border-border">
+      <CardContent className="p-6 space-y-6">
+        <CardTitle className="text-center">{session.title}</CardTitle>
 
-//         <div className="text-center">
-//           <p className="text-lg mb-4">How was the session?</p>
-//           <StarRating
-//             rating={feedback.rating}
-//             onRatingChange={(rating) =>
-//               setFeedback((prev) => ({ ...prev, rating }))
-//             }
-//           />
-//         </div>
+        <div className="text-center">
+          <p className="text-lg mb-4">How was the session?</p>
+          <StarRating
+            rating={feedback.rating}
+            onRatingChange={(rating) =>
+              setFeedback((prev) => ({ ...prev, rating }))
+            }
+          />
+        </div>
 
-//         {feedback.rating > 0 && (
-//           <div className="space-y-4">
-//             <div className="flex flex-wrap gap-2 justify-center">
-//               {predefinedTags.map((tag) => (
-//                 <Badge
-//                   key={tag}
-//                   variant={feedback.tags.includes(tag) ? 'default' : 'outline'}
-//                   className="cursor-pointer hover:scale-105 transition-transform"
-//                   onClick={() => toggleTag(tag)}
-//                 >
-//                   {tag}
-//                 </Badge>
-//               ))}
-//             </div>
+        {feedback.rating > 0 && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2 justify-center">
+              {predefinedTags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant={feedback.tags.includes(tag) ? 'default' : 'outline'}
+                  className="cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => toggleTag(tag)}
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </div>
 
-//             <Textarea
-//               placeholder="Add comment"
-//               value={feedback.comment}
-//               onChange={(e) =>
-//                 setFeedback((prev) => ({ ...prev, comment: e.target.value }))
-//               }
-//               className="min-h-[80px]"
-//             />
-//           </div>
-//         )}
+            <Textarea
+              placeholder="Add comment"
+              value={feedback.comment}
+              onChange={(e) =>
+                setFeedback((prev) => ({ ...prev, comment: e.target.value }))
+              }
+              className="min-h-[80px]"
+            />
+          </div>
+        )}
 
-//         <Button
-//           onClick={handleSubmit}
-//           className="w-full"
-//           disabled={feedback.rating === 0}
-//         >
-//           Submit
-//         </Button>
-//       </CardContent>
-//     </Card>
-//   );
-// }
+        <Button
+          onClick={handleSubmit}
+          className="w-full"
+          disabled={feedback.rating === 0}
+        >
+          Submit
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function SessionPage() {
   const params = useParams();
   const eventId = params.id as string;
   const events = useEvents();
   const askQuestion = useCreateQuestion();
+  const createSessionFeedback = useCreateSessionFeedback();
 
   const removeQuestionMutation = useDeleteQuestion();
 
@@ -358,17 +382,25 @@ export default function SessionPage() {
     await removeQuestionMutation({ id: questionId });
   };
 
-  // const handleFeedbackSubmit = (
-  //   sessionId: number,
-  //   feedback: SessionFeedback
-  // ) => {
-  //   setSessions((prev) =>
-  //     prev.map((session) =>
-  //       session.id === sessionId ? { ...session, feedback } : session
-  //     )
-  //   );
-  //   console.log(`Session ${sessionId} feedback:`, feedback);
-  // };
+  const handleFeedbackSubmit = async (
+    sessionId: Id<'sessions'>,
+    feedback: {
+      rating: number;
+      tags: string[];
+      comment: string;
+    }
+  ) => {
+    try {
+      await createSessionFeedback({
+        sessionId,
+        rating: feedback.rating,
+        tags: feedback.tags,
+        comment: feedback.comment,
+      });
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -593,23 +625,36 @@ export default function SessionPage() {
       </div>
 
       {/* Feedback Section - Only for completed sessions */}
-      {/* <div className="space-y-6">
-        <h2 className="text-3xl text-center text-foreground">
-          Session Feedback
-        </h2>
+      <div className="space-y-6">
+        {event.sessions.some((session) => session.completed) && (
+          <h2 className="text-3xl text-center text-foreground">
+            Session Feedback
+          </h2>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sessions
+          {event.sessions
             .filter((session) => session.completed)
             .map((session) => (
               <SessionFeedbackCard
-                key={`feedback-${session.id}`}
-                session={session}
-                onFeedbackSubmit={handleFeedbackSubmit}
+                key={`feedback-${session._id}`}
+                session={{
+                  id: session._id,
+                  title: session.title,
+                  completed: session.completed,
+                  feedback: session.feedback[0] || {
+                    rating: 0,
+                    tags: [],
+                    comment: '',
+                  },
+                }}
+                onFeedbackSubmit={async (sessionId, feedback) =>
+                  await handleFeedbackSubmit(sessionId, feedback)
+                }
               />
             ))}
         </div>
-      </div> */}
+      </div>
     </div>
   );
 }

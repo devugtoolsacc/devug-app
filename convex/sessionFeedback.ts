@@ -21,7 +21,12 @@ export const create = mutation({
     comment: v.string(),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert('sessionFeedback', args);
+    return await ctx.db.insert('sessionFeedback', {
+      sessionId: args.sessionId,
+      rating: args.rating,
+      tags: args.tags,
+      comment: args.comment,
+    });
   },
 });
 
