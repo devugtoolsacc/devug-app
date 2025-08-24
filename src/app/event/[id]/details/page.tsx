@@ -23,7 +23,7 @@ import {
   User,
   Building,
 } from 'lucide-react';
-import { sampleEvents } from '@/data/data';
+import { useEvent } from '@/data/data';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -32,22 +32,22 @@ export default function EventDetailsPage() {
   const params = useParams();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isRSVPed, setIsRSVPed] = useState(false);
+  const event = useEvent(params.id as string);
 
   // Find the event by ID (in a real app, this would be a database query)
-  const event = sampleEvents.find((e) => e.id === params.id) || sampleEvents[0];
 
   // Check if event is today or live
   const isEventToday = () => {
-    if (event.isLive) return true;
+    if (event?.isLive) return true;
 
     const today = new Date();
-    const eventDate = new Date(event.date);
+    const eventDate = new Date(event?.date || '');
 
     // Simple date comparison (you might want to use a date library like date-fns for more robust comparison)
     return today.toDateString() === eventDate.toDateString();
   };
 
-  const isEventLive = event.isLive;
+  const isEventLive = event?.isLive;
   const isToday = isEventToday();
   const canJoin = isEventLive || isToday;
 
@@ -58,8 +58,8 @@ export default function EventDetailsPage() {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: event.title,
-        text: event.description,
+        title: event?.title || '',
+        text: event?.description || '',
         url: window.location.href,
       });
     } else {
@@ -85,7 +85,7 @@ export default function EventDetailsPage() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>{event.title}</BreadcrumbPage>
+                  <BreadcrumbPage>{event?.title}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -121,9 +121,9 @@ export default function EventDetailsPage() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-xs">
-                  {event.price === 'free' ? 'Free Event' : 'Paid Event'}
+                  {event?.price === 'free' ? 'Free Event' : 'Paid Event'}
                 </Badge>
-                {event.hasInPerson && event.hasOnline && (
+                {event?.hasInPerson && event?.hasOnline && (
                   <Badge variant="outline" className="text-xs">
                     Hybrid
                   </Badge>
@@ -131,11 +131,11 @@ export default function EventDetailsPage() {
               </div>
 
               <h1 className="text-3xl font-bold text-foreground leading-tight">
-                {event.title}
+                {event?.title}
               </h1>
 
               <p className="text-lg text-muted-foreground leading-relaxed">
-                {event.description}
+                {event?.description}
               </p>
             </div>
 
@@ -150,7 +150,7 @@ export default function EventDetailsPage() {
                     <CalendarDays className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium text-foreground">
-                        {event.date}
+                        {event?.date}
                       </p>
                       <p className="text-sm text-muted-foreground">Date</p>
                     </div>
@@ -170,7 +170,7 @@ export default function EventDetailsPage() {
                     <MapPin className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium text-foreground">
-                        {event.location}
+                        {event?.location}
                       </p>
                       <p className="text-sm text-muted-foreground">Location</p>
                     </div>
@@ -180,7 +180,7 @@ export default function EventDetailsPage() {
                     <Users className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium text-foreground">
-                        {event.attendeeCount} attendees
+                        {event?.attendeeCount} attendees
                       </p>
                       <p className="text-sm text-muted-foreground">Capacity</p>
                     </div>
@@ -190,14 +190,14 @@ export default function EventDetailsPage() {
             </Card>
 
             {/* Speakers Section */}
-            {event.speakers.length > 0 && (
+            {event?.speakers && event?.speakers?.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl">Speakers</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {event.speakers.map((speaker, index) => (
+                    {event?.speakers.map((speaker, index) => (
                       <div
                         key={index}
                         className="flex items-center gap-4 p-4 rounded-lg border border-border"
@@ -255,7 +255,7 @@ export default function EventDetailsPage() {
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-foreground">
-                    {event.price}
+                    {event?.price}
                   </p>
                   <p className="text-sm text-muted-foreground">per person</p>
                 </div>
@@ -275,23 +275,23 @@ export default function EventDetailsPage() {
                       </div>
                     )}
 
-                    {event.hasInPerson && (
+                    {event?.hasInPerson && (
                       <Button className="w-full" size="lg" asChild>
-                        <Link href={`/event/${event.id}/session`}>
+                        <Link href={`/event/${event?.id}/session`}>
                           <Building className="h-4 w-4 mr-2" />
                           Join In Person
                         </Link>
                       </Button>
                     )}
 
-                    {event.hasOnline && (
+                    {event?.hasOnline && (
                       <Button
                         variant={isEventLive ? 'destructive' : 'default'}
                         className="w-full"
                         size="lg"
                         asChild
                       >
-                        <Link href={`/event/${event.id}/session`}>
+                        <Link href={`/event/${event?.id}/session`}>
                           <Video className="h-4 w-4 mr-2" />
                           {isEventLive ? 'Join Live Stream' : 'Join Online'}
                         </Link>
@@ -301,7 +301,7 @@ export default function EventDetailsPage() {
                 ) : (
                   // Show RSVP buttons for future events
                   <div className="space-y-3">
-                    {event.hasInPerson && (
+                    {event?.hasInPerson && (
                       <Button
                         className="w-full"
                         size="lg"
@@ -313,7 +313,7 @@ export default function EventDetailsPage() {
                       </Button>
                     )}
 
-                    {event.hasOnline && (
+                    {event?.hasOnline && (
                       <Button
                         variant="outline"
                         className="w-full"
@@ -330,11 +330,11 @@ export default function EventDetailsPage() {
 
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">
-                    {event.attendeeCount} people attending
+                    {event?.attendeeCount} people attending
                   </p>
                   {canJoin && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      Session will start at {event.time}
+                      Session will start at {event?.time}
                     </p>
                   )}
                 </div>

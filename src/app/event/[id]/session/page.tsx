@@ -25,55 +25,55 @@ import {
   Megaphone,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { sampleEvents } from '@/data/data';
+import { useCreateQuestion, useEvents } from '@/data/data';
 
-type SessionType = 'announcement' | 'break' | 'talk';
+// type SessionType = 'announcement' | 'break' | 'talk';
 
-interface SessionFeedback {
-  rating: number;
-  tags: string[];
-  comment: string;
-}
+// interface SessionFeedback {
+//   rating: number;
+//   tags: string[];
+//   comment: string;
+// }
 
-interface Question {
-  id: number;
-  text: string;
-  author: string;
-  sessionId: number;
-  isHandRaise?: boolean;
-  timestamp: Date;
-}
+// interface Question {
+//   id: number;
+//   text: string;
+//   author: string;
+//   sessionId: number;
+//   isHandRaise?: boolean;
+//   timestamp: Date;
+// }
 
-interface SessionData {
-  id: number;
-  title: string;
-  type: SessionType;
-  startTime: Date;
-  endTime: Date;
-  completed: boolean;
-  isActive: boolean;
-  open: boolean;
-  speaker?: {
-    name: string;
-    avatar: string;
-    role: string;
-  };
-  description?: string;
-  videoLink?: string;
-  questions: Question[];
-  feedback: SessionFeedback;
-}
+// interface SessionData {
+//   id: number;
+//   title: string;
+//   type: SessionType;
+//   startTime: Date;
+//   endTime: Date;
+//   completed: boolean;
+//   isActive: boolean;
+//   open: boolean;
+//   speaker?: {
+//     name: string;
+//     avatar: string;
+//     role: string;
+//   };
+//   description?: string;
+//   videoLink?: string;
+//   questions: Question[];
+//   feedback: SessionFeedback;
+// }
 
-const predefinedTags = [
-  'Interesting topic',
-  'Nice talk',
-  'Great presentation',
-  'Clear explanation',
-  'Engaging',
-  'Informative',
-  'Well organized',
-  'Good pace',
-];
+// const predefinedTags = [
+//   'Interesting topic',
+//   'Nice talk',
+//   'Great presentation',
+//   'Clear explanation',
+//   'Engaging',
+//   'Informative',
+//   'Well organized',
+//   'Good pace',
+// ];
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString('en-US', {
@@ -89,7 +89,7 @@ function formatDuration(startTime: Date, endTime: Date): string {
   return `${minutes} min`;
 }
 
-function getSessionTypeIcon(type: SessionType) {
+function getSessionTypeIcon(type: string) {
   switch (type) {
     case 'announcement':
       return <Megaphone className="h-5 w-5" />;
@@ -102,7 +102,7 @@ function getSessionTypeIcon(type: SessionType) {
   }
 }
 
-function getSessionTypeColor(type: SessionType) {
+function getSessionTypeColor(type: string) {
   switch (type) {
     case 'announcement':
       return 'bg-blue-100 text-blue-800 border-blue-200';
@@ -164,106 +164,108 @@ function StarRating({
   );
 }
 
-function SessionFeedbackCard({
-  session,
-  onFeedbackSubmit,
-}: {
-  session: SessionData;
-  onFeedbackSubmit: (sessionId: number, feedback: SessionFeedback) => void;
-}) {
-  const [feedback, setFeedback] = useState<SessionFeedback>(session.feedback);
+// function SessionFeedbackCard({
+//   session,
+//   onFeedbackSubmit,
+// }: {
+//   session: Session;
+//   onFeedbackSubmit: (sessionId: number, feedback: SessionFeedback) => void;
+// }) {
+//   const [feedback, setFeedback] = useState<SessionFeedback>(session.feedback);
 
-  const toggleTag = (tag: string) => {
-    setFeedback((prev) => ({
-      ...prev,
-      tags: prev.tags.includes(tag)
-        ? prev.tags.filter((t) => t !== tag)
-        : [...prev.tags, tag],
-    }));
-  };
+//   const toggleTag = (tag: string) => {
+//     setFeedback((prev) => ({
+//       ...prev,
+//       tags: prev.tags.includes(tag)
+//         ? prev.tags.filter((t) => t !== tag)
+//         : [...prev.tags, tag],
+//     }));
+//   };
 
-  const handleSubmit = () => {
-    onFeedbackSubmit(session.id, feedback);
-  };
+//   const handleSubmit = () => {
+//     onFeedbackSubmit(session.id, feedback);
+//   };
 
-  if (!session.completed) {
-    return (
-      <Card className="border border-border opacity-50">
-        <CardContent className="p-6 text-center">
-          <CardTitle className="mb-4">{session.title}</CardTitle>
-          <p className="text-muted-foreground">
-            Feedback available after session completion
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+//   if (!session.completed) {
+//     return (
+//       <Card className="border border-border opacity-50">
+//         <CardContent className="p-6 text-center">
+//           <CardTitle className="mb-4">{session.title}</CardTitle>
+//           <p className="text-muted-foreground">
+//             Feedback available after session completion
+//           </p>
+//         </CardContent>
+//       </Card>
+//     );
+//   }
 
-  return (
-    <Card className="border border-border">
-      <CardContent className="p-6 space-y-6">
-        <CardTitle className="text-center">{session.title}</CardTitle>
+//   return (
+//     <Card className="border border-border">
+//       <CardContent className="p-6 space-y-6">
+//         <CardTitle className="text-center">{session.title}</CardTitle>
 
-        <div className="text-center">
-          <p className="text-lg mb-4">How was the session?</p>
-          <StarRating
-            rating={feedback.rating}
-            onRatingChange={(rating) =>
-              setFeedback((prev) => ({ ...prev, rating }))
-            }
-          />
-        </div>
+//         <div className="text-center">
+//           <p className="text-lg mb-4">How was the session?</p>
+//           <StarRating
+//             rating={feedback.rating}
+//             onRatingChange={(rating) =>
+//               setFeedback((prev) => ({ ...prev, rating }))
+//             }
+//           />
+//         </div>
 
-        {feedback.rating > 0 && (
-          <div className="space-y-4">
-            <div className="flex flex-wrap gap-2 justify-center">
-              {predefinedTags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant={feedback.tags.includes(tag) ? 'default' : 'outline'}
-                  className="cursor-pointer hover:scale-105 transition-transform"
-                  onClick={() => toggleTag(tag)}
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
+//         {feedback.rating > 0 && (
+//           <div className="space-y-4">
+//             <div className="flex flex-wrap gap-2 justify-center">
+//               {predefinedTags.map((tag) => (
+//                 <Badge
+//                   key={tag}
+//                   variant={feedback.tags.includes(tag) ? 'default' : 'outline'}
+//                   className="cursor-pointer hover:scale-105 transition-transform"
+//                   onClick={() => toggleTag(tag)}
+//                 >
+//                   {tag}
+//                 </Badge>
+//               ))}
+//             </div>
 
-            <Textarea
-              placeholder="Add comment"
-              value={feedback.comment}
-              onChange={(e) =>
-                setFeedback((prev) => ({ ...prev, comment: e.target.value }))
-              }
-              className="min-h-[80px]"
-            />
-          </div>
-        )}
+//             <Textarea
+//               placeholder="Add comment"
+//               value={feedback.comment}
+//               onChange={(e) =>
+//                 setFeedback((prev) => ({ ...prev, comment: e.target.value }))
+//               }
+//               className="min-h-[80px]"
+//             />
+//           </div>
+//         )}
 
-        <Button
-          onClick={handleSubmit}
-          className="w-full"
-          disabled={feedback.rating === 0}
-        >
-          Submit
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
+//         <Button
+//           onClick={handleSubmit}
+//           className="w-full"
+//           disabled={feedback.rating === 0}
+//         >
+//           Submit
+//         </Button>
+//       </CardContent>
+//     </Card>
+//   );
+// }
 
 export default function SessionPage() {
   const params = useParams();
   const eventId = params.id as string;
+  const events = useEvents();
+  const askQuestion = useCreateQuestion();
 
   // Find the event by ID
-  const event = sampleEvents.find((e) => e.id === eventId);
+  const event = events?.find((e) => e.id === eventId);
 
   // Convert event sessions to SessionData format and add open state
-  const [sessions, setSessions] = useState<SessionData[]>(
+  const [sessions, setSessions] = useState(
     event?.sessions?.map((session) => ({
       ...session,
-      open: false, // Add open state for collapsible
+      open: session.isActive, // Add open state for collapsible
     })) || []
   );
 
@@ -313,57 +315,28 @@ export default function SessionPage() {
     );
   };
 
-  const handleAskQuestion = (sessionId: number) => {
-    if (newQuestion.trim()) {
-      const newQ: Question = {
-        id: Date.now(),
-        text: newQuestion,
-        author: 'you',
-        sessionId,
-        timestamp: new Date(),
-      };
-      setSessions((prev) =>
-        prev.map((session) =>
-          session.id === sessionId
-            ? { ...session, questions: [...session.questions, newQ] }
-            : session
-        )
-      );
-      setNewQuestion('');
-    }
+  const handleAskQuestion = async (sessionId: number) => {
+    if (!newQuestion.trim()) return;
+
+    await askQuestion({
+      id: Date.now(),
+      sessionId,
+      text: newQuestion,
+      author: 'you',
+      timestamp: new Date().getTime(),
+    });
+    setNewQuestion('');
   };
 
-  const handleRaiseHand = (sessionId: number) => {
-    if (!isHandRaised) {
-      const handRaiseQ: Question = {
-        id: Date.now(),
-        text: 'You raised your hand.',
-        author: 'System',
-        sessionId,
-        isHandRaise: true,
-        timestamp: new Date(),
-      };
-      setSessions((prev) =>
-        prev.map((session) =>
-          session.id === sessionId
-            ? { ...session, questions: [...session.questions, handRaiseQ] }
-            : session
-        )
-      );
-    } else {
-      setSessions((prev) =>
-        prev.map((session) =>
-          session.id === sessionId
-            ? {
-                ...session,
-                questions: session.questions.filter(
-                  (q) => !(q.isHandRaise && q.author === 'System')
-                ),
-              }
-            : session
-        )
-      );
-    }
+  const handleRaiseHand = async (sessionId: number) => {
+    await askQuestion({
+      id: Date.now(),
+      sessionId,
+      text: 'You raised your hand.',
+      author: 'System',
+      timestamp: new Date().getTime(),
+    });
+
     setIsHandRaised(!isHandRaised);
   };
 
@@ -380,17 +353,17 @@ export default function SessionPage() {
     );
   };
 
-  const handleFeedbackSubmit = (
-    sessionId: number,
-    feedback: SessionFeedback
-  ) => {
-    setSessions((prev) =>
-      prev.map((session) =>
-        session.id === sessionId ? { ...session, feedback } : session
-      )
-    );
-    console.log(`Session ${sessionId} feedback:`, feedback);
-  };
+  // const handleFeedbackSubmit = (
+  //   sessionId: number,
+  //   feedback: SessionFeedback
+  // ) => {
+  //   setSessions((prev) =>
+  //     prev.map((session) =>
+  //       session.id === sessionId ? { ...session, feedback } : session
+  //     )
+  //   );
+  //   console.log(`Session ${sessionId} feedback:`, feedback);
+  // };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -614,7 +587,7 @@ export default function SessionPage() {
       </div>
 
       {/* Feedback Section - Only for completed sessions */}
-      <div className="space-y-6">
+      {/* <div className="space-y-6">
         <h2 className="text-3xl text-center text-foreground">
           Session Feedback
         </h2>
@@ -630,7 +603,7 @@ export default function SessionPage() {
               />
             ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

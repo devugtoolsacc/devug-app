@@ -33,16 +33,17 @@ import {
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { sampleEvents as events } from '@/data/data';
+import { useEvents } from '@/data/data';
 
 export default function EventsPage() {
+  const events = useEvents();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Filter events based on search and filters
-  const filteredEvents = events.filter((event) => {
+  const filteredEvents = events?.filter((event) => {
     const matchesSearch =
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -65,8 +66,8 @@ export default function EventsPage() {
   });
 
   // Separate live events
-  const liveEvents = filteredEvents.filter((event) => event.isLive);
-  const upcomingEvents = filteredEvents.filter((event) => !event.isLive);
+  const liveEvents = filteredEvents?.filter((event) => event.isLive);
+  const upcomingEvents = filteredEvents?.filter((event) => !event.isLive);
 
   return (
     <div className="space-y-8">
@@ -141,14 +142,14 @@ export default function EventsPage() {
 
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {filteredEvents.length} event
-            {filteredEvents.length !== 1 ? 's' : ''} found
+            {filteredEvents && filteredEvents.length} event
+            {filteredEvents && filteredEvents.length !== 1 ? 's' : ''} found
           </p>
         </div>
       </div>
 
       {/* Live Events Section */}
-      {liveEvents.length > 0 && (
+      {liveEvents && liveEvents.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
@@ -156,7 +157,7 @@ export default function EventsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {liveEvents.map((event) => (
+            {liveEvents?.map((event) => (
               <Card
                 key={event.id}
                 className="border border-red-200/50 bg-red-50/30 dark:bg-red-950/10 hover:shadow-md transition-shadow"
@@ -180,7 +181,7 @@ export default function EventsPage() {
                   </div>
                   <CardTitle className="text-lg text-foreground">
                     {event.featuredSessionId
-                      ? event.sessions.find(
+                      ? event.sessions?.find(
                           (s) => s.id === event.featuredSessionId
                         )?.title || event.title
                       : event.title}
@@ -220,7 +221,7 @@ export default function EventsPage() {
       )}
 
       {/* Upcoming Events Section */}
-      {upcomingEvents.length > 0 && (
+      {upcomingEvents && upcomingEvents.length > 0 && (
         <div className="space-y-6">
           <h2 className="text-2xl font-semibold text-foreground">
             Upcoming Events
@@ -229,7 +230,7 @@ export default function EventsPage() {
           {/* Events Display */}
           {viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingEvents.map((event) => (
+              {upcomingEvents?.map((event) => (
                 <Card
                   key={event.id}
                   className="border border-border cursor-pointer hover:shadow-md transition-shadow"
@@ -242,7 +243,7 @@ export default function EventsPage() {
                         </Badge>
                         <CardTitle className="text-xl text-foreground">
                           {event.featuredSessionId
-                            ? event.sessions.find(
+                            ? event.sessions?.find(
                                 (s) => s.id === event.featuredSessionId
                               )?.title || event.title
                             : event.title}
@@ -306,7 +307,7 @@ export default function EventsPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {upcomingEvents.map((event) => (
+              {upcomingEvents?.map((event) => (
                 <Card
                   key={event.id}
                   className="border border-border cursor-pointer hover:shadow-md transition-shadow"
@@ -321,7 +322,7 @@ export default function EventsPage() {
                             </Badge>
                             <CardTitle className="text-xl text-foreground">
                               {event.featuredSessionId
-                                ? event.sessions.find(
+                                ? event.sessions?.find(
                                     (s) => s.id === event.featuredSessionId
                                   )?.title || event.title
                                 : event.title}
@@ -396,7 +397,7 @@ export default function EventsPage() {
       )}
 
       {/* No Results */}
-      {filteredEvents.length === 0 && (
+      {filteredEvents && filteredEvents.length === 0 && (
         <div className="text-center py-12">
           <div className="space-y-4">
             <div className="text-6xl">🔍</div>

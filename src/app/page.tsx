@@ -1,3 +1,4 @@
+'use client';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,14 +19,19 @@ import {
   Clock,
 } from 'lucide-react';
 
-import { sampleEvents as events } from '@/data/data';
+import { api } from '../../convex/_generated/api';
+import { useQuery } from 'convex/react';
 
 export default function Home() {
+  const events = useQuery(api.events.getAll);
+
+  console.log({ events });
+
   // Get live events
-  const liveEvents = events.filter((event) => event.isLive);
+  const liveEvents = events?.filter((event) => event.isLive);
+  const upcomingEvents = events?.filter((event) => !event.isLive).slice(0, 3);
 
   // Get upcoming events (first 3 non-live events)
-  const upcomingEvents = events.filter((event) => !event.isLive).slice(0, 3);
 
   return (
     <div className="space-y-12">
@@ -53,7 +59,7 @@ export default function Home() {
       </div>
 
       {/* Live Events Section */}
-      {liveEvents.length > 0 && (
+      {liveEvents && liveEvents.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
@@ -61,7 +67,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {liveEvents.map((event) => (
+            {liveEvents?.map((event) => (
               <Card
                 key={event.id}
                 className="border border-red-200/50 bg-red-50/30 dark:bg-red-950/10 hover:shadow-md transition-shadow"
@@ -77,7 +83,7 @@ export default function Home() {
                       </Badge>
                       <CardTitle className="text-lg text-foreground">
                         {event.featuredSessionId
-                          ? event.sessions.find(
+                          ? event.sessions?.find(
                               (s) => s.id === event.featuredSessionId
                             )?.title || event.title
                           : event.title}
@@ -138,78 +144,81 @@ export default function Home() {
 
         {/* Events Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {upcomingEvents.map((event) => (
-            <Card
-              key={event.id}
-              className="border border-border cursor-pointer hover:shadow-md transition-shadow"
-            >
-              <CardHeader className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {event.category}
-                    </Badge>
-                    <CardTitle className="text-xl text-foreground">
-                      {event.featuredSessionId
-                        ? event.sessions.find(
-                            (s) => s.id === event.featuredSessionId
-                          )?.title || event.title
-                        : event.title}
-                    </CardTitle>
+          {upcomingEvents &&
+            upcomingEvents.map((event) => (
+              <Card
+                key={event.id}
+                className="border border-border cursor-pointer hover:shadow-md transition-shadow"
+              >
+                <CardHeader className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {event.category}
+                      </Badge>
+                      <CardTitle className="text-xl text-foreground">
+                        {event.featuredSessionId
+                          ? event.sessions?.find(
+                              (s) => s.id === event.featuredSessionId
+                            )?.title || event.title
+                          : event.title}
+                      </CardTitle>
+                    </div>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Settings className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <Settings className="h-4 w-4" />
+                  <p className="text-sm text-foreground leading-normal">
+                    {event.description}
+                  </p>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Users className="h-4 w-4" />
+                      {event.attendeeCount}/{event.maxAttendees} attendees
+                    </div>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      {event.location}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    {event.time}
+                  </div>
+
+                  <div className="text-base text-muted-foreground">
+                    {event.price}
+                  </div>
+
+                  <div className="flex gap-2">
+                    {event.hasInPerson && (
+                      <Button variant="outline" size="sm" className="flex-1">
+                        <Building className="h-3 w-3 mr-1" />
+                        In Person
+                      </Button>
+                    )}
+                    {event.hasOnline && (
+                      <Button variant="outline" size="sm" className="flex-1">
+                        <Video className="h-3 w-3 mr-1" />
+                        Online
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+
+                <CardFooter>
+                  <Button className="w-full" asChild>
+                    <Link href={`/event/${event.id}/details`}>
+                      View Details
+                    </Link>
                   </Button>
-                </div>
-                <p className="text-sm text-foreground leading-normal">
-                  {event.description}
-                </p>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    {event.attendeeCount}/{event.maxAttendees} attendees
-                  </div>
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    {event.location}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  {event.time}
-                </div>
-
-                <div className="text-base text-muted-foreground">
-                  {event.price}
-                </div>
-
-                <div className="flex gap-2">
-                  {event.hasInPerson && (
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Building className="h-3 w-3 mr-1" />
-                      In Person
-                    </Button>
-                  )}
-                  {event.hasOnline && (
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Video className="h-3 w-3 mr-1" />
-                      Online
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-
-              <CardFooter>
-                <Button className="w-full" asChild>
-                  <Link href={`/event/${event.id}/details`}>View Details</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                </CardFooter>
+              </Card>
+            ))}
         </div>
       </div>
 
