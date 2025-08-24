@@ -14,6 +14,10 @@ const links = [
     label: 'Events',
     href: '/events',
   },
+  {
+    label: 'Create Event',
+    href: '/event/create',
+  },
 ];
 
 export default function Header() {
