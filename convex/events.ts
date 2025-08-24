@@ -1,4 +1,4 @@
-import { query, mutation, action } from './_generated/server';
+import { query, mutation } from './_generated/server';
 import { v } from 'convex/values';
 
 // Get all events
@@ -12,7 +12,7 @@ export const getAll = query({
       events.map(async (event) => {
         const sessions = await ctx.db
           .query('sessions')
-          .filter((q) => q.eq(q.field('eventId'), event.id))
+          .filter((q) => q.eq(q.field('eventId'), event._id))
           .collect();
 
         // Get sessions with their questions and feedback
@@ -20,27 +20,18 @@ export const getAll = query({
           sessions.map(async (session) => {
             const questions = await ctx.db
               .query('questions')
-              .filter((q) => q.eq(q.field('sessionId'), session.id))
+              .filter((q) => q.eq(q.field('sessionId'), session._id))
               .collect();
 
             const feedback = await ctx.db
               .query('sessionFeedback')
-              .filter((q) => q.eq(q.field('sessionId'), session.id))
+              .filter((q) => q.eq(q.field('sessionId'), session._id))
               .collect();
 
             return {
               ...session,
-              // Convert Unix timestamps back to Date objects for frontend compatibility
-              startTime: session.startTime,
-              endTime: session.endTime,
-              questions: questions.map((q) => ({
-                ...q,
-                timestamp: q.timestamp,
-              })),
-              feedback:
-                feedback.length > 0
-                  ? feedback[0]
-                  : { rating: 0, tags: [], comment: '' },
+              questions,
+              feedback,
             };
           })
         );
@@ -62,40 +53,34 @@ export const getById = query({
   handler: async (ctx, args) => {
     const event = await ctx.db
       .query('events')
-      .filter((q) => q.eq(q.field('id'), args.id))
+      .filter((q) => q.eq(q.field('_id'), args.id))
       .first();
 
     if (!event) return null;
 
     const sessions = await ctx.db
       .query('sessions')
-      .filter((q) => q.eq(q.field('eventId'), event.id))
+      .filter((q) => q.eq(q.field('eventId'), event._id))
       .collect();
 
     const sessionsWithDetails = await Promise.all(
       sessions.map(async (session) => {
         const questions = await ctx.db
           .query('questions')
-          .filter((q) => q.eq(q.field('sessionId'), session.id))
+          .filter((q) => q.eq(q.field('sessionId'), session._id))
           .collect();
 
         const feedback = await ctx.db
           .query('sessionFeedback')
-          .filter((q) => q.eq(q.field('sessionId'), session.id))
+          .filter((q) => q.eq(q.field('sessionId'), session._id))
           .collect();
 
         return {
           ...session,
           startTime: session.startTime,
           endTime: session.endTime,
-          questions: questions.map((q) => ({
-            ...q,
-            timestamp: q.timestamp,
-          })),
-          feedback:
-            feedback.length > 0
-              ? feedback[0]
-              : { rating: 0, tags: [], comment: '' },
+          questions,
+          feedback,
         };
       })
     );
@@ -133,7 +118,6 @@ export const getLiveEvents = query({
 export const getUpcomingEvents = query({
   args: {},
   handler: async (ctx) => {
-    const now = Date.now();
     return await ctx.db
       .query('events')
       .filter((q) =>
@@ -163,26 +147,20 @@ export const getSessionsByEventId = query({
       sessions.map(async (session) => {
         const questions = await ctx.db
           .query('questions')
-          .filter((q) => q.eq(q.field('sessionId'), session.id))
+          .filter((q) => q.eq(q.field('sessionId'), session._id))
           .collect();
 
         const feedback = await ctx.db
           .query('sessionFeedback')
-          .filter((q) => q.eq(q.field('sessionId'), session.id))
+          .filter((q) => q.eq(q.field('sessionId'), session._id))
           .collect();
 
         return {
           ...session,
           startTime: session.startTime,
           endTime: session.endTime,
-          questions: questions.map((q) => ({
-            ...q,
-            timestamp: q.timestamp,
-          })),
-          feedback:
-            feedback.length > 0
-              ? feedback[0]
-              : { rating: 0, tags: [], comment: '' },
+          questions,
+          feedback,
         };
       })
     );
@@ -194,7 +172,6 @@ export const getSessionsByEventId = query({
 // Create a new event
 export const create = mutation({
   args: {
-    id: v.string(),
     title: v.string(),
     description: v.string(),
     date: v.string(),
@@ -215,7 +192,7 @@ export const create = mutation({
     isLive: v.boolean(),
     tags: v.array(v.string()),
     category: v.string(),
-    featuredSessionId: v.optional(v.number()),
+    featuredSessionId: v.optional(v.id('sessions')),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert('events', args);
@@ -248,11 +225,10 @@ export const update = mutation({
     isLive: v.optional(v.boolean()),
     tags: v.optional(v.array(v.string())),
     category: v.optional(v.string()),
-    featuredSessionId: v.optional(v.number()),
+    featuredSessionId: v.optional(v.id('sessions')),
   },
   handler: async (ctx, args) => {
-    const { id, ...updateFields } = args;
-    return await ctx.db.patch(id, updateFields);
+    return await ctx.db.patch(args.id, args);
   },
 });
 
@@ -270,7 +246,7 @@ export const remove = mutation({
     for (const session of sessions) {
       await ctx.db
         .query('questions')
-        .filter((q) => q.eq(q.field('sessionId'), session.id))
+        .filter((q) => q.eq(q.field('sessionId'), session._id))
         .collect()
         .then((questions) =>
           Promise.all(questions.map((q) => ctx.db.delete(q._id)))
@@ -278,7 +254,7 @@ export const remove = mutation({
 
       await ctx.db
         .query('sessionFeedback')
-        .filter((q) => q.eq(q.field('sessionId'), session.id))
+        .filter((q) => q.eq(q.field('sessionId'), session._id))
         .collect()
         .then((feedback) =>
           Promise.all(feedback.map((f) => ctx.db.delete(f._id)))
@@ -290,7 +266,7 @@ export const remove = mutation({
     // Delete the event
     const event = await ctx.db
       .query('events')
-      .filter((q) => q.eq(q.field('id'), args.id))
+      .filter((q) => q.eq(q.field('_id'), args.id))
       .first();
 
     if (event) {
@@ -299,56 +275,16 @@ export const remove = mutation({
   },
 });
 
-// Add a question to a session
-export const addQuestion = mutation({
-  args: {
-    id: v.number(),
-    sessionId: v.number(),
-    text: v.string(),
-    author: v.string(),
-    isHandRaise: v.optional(v.boolean()),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db.insert('questions', {
-      ...args,
-      timestamp: Date.now(),
-    });
-  },
-});
-
-// Update session feedback
-export const updateSessionFeedback = mutation({
-  args: {
-    sessionId: v.number(),
-    rating: v.number(),
-    tags: v.array(v.string()),
-    comment: v.string(),
-  },
-  handler: async (ctx, args) => {
-    // Check if feedback already exists
-    const existingFeedback = await ctx.db
-      .query('sessionFeedback')
-      .filter((q) => q.eq(q.field('sessionId'), args.sessionId))
-      .first();
-
-    if (existingFeedback) {
-      return await ctx.db.patch(existingFeedback._id, args);
-    } else {
-      return await ctx.db.insert('sessionFeedback', args);
-    }
-  },
-});
-
 // Update attendee count
 export const updateAttendeeCount = mutation({
   args: {
-    eventId: v.string(),
+    eventId: v.id('events'),
     increment: v.number(),
   },
   handler: async (ctx, args) => {
     const event = await ctx.db
       .query('events')
-      .filter((q) => q.eq(q.field('id'), args.eventId))
+      .filter((q) => q.eq(q.field('_id'), args.eventId))
       .first();
 
     if (event) {

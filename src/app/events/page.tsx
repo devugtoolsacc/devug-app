@@ -159,7 +159,7 @@ export default function EventsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {liveEvents?.map((event) => (
               <Card
-                key={event.id}
+                key={event._id}
                 className="border border-red-200/50 bg-red-50/30 dark:bg-red-950/10 hover:shadow-md transition-shadow"
               >
                 <CardHeader className="space-y-2 pb-3">
@@ -182,7 +182,7 @@ export default function EventsPage() {
                   <CardTitle className="text-lg text-foreground">
                     {event.featuredSessionId
                       ? event.sessions?.find(
-                          (s) => s.id === event.featuredSessionId
+                          (s) => s._id === event.featuredSessionId
                         )?.title || event.title
                       : event.title}
                   </CardTitle>
@@ -232,7 +232,7 @@ export default function EventsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {upcomingEvents?.map((event) => (
                 <Card
-                  key={event.id}
+                  key={event._id}
                   className="border border-border cursor-pointer hover:shadow-md transition-shadow"
                 >
                   <CardHeader className="space-y-2">
@@ -244,7 +244,7 @@ export default function EventsPage() {
                         <CardTitle className="text-xl text-foreground">
                           {event.featuredSessionId
                             ? event.sessions?.find(
-                                (s) => s.id === event.featuredSessionId
+                                (s) => s._id === event.featuredSessionId
                               )?.title || event.title
                             : event.title}
                         </CardTitle>
@@ -297,7 +297,7 @@ export default function EventsPage() {
 
                   <CardFooter>
                     <Button className="w-full" asChild>
-                      <Link href={`/event/${event.id}/details`}>
+                      <Link href={`/event/${event._id}/details`}>
                         View Details
                       </Link>
                     </Button>
@@ -309,7 +309,7 @@ export default function EventsPage() {
             <div className="space-y-4">
               {upcomingEvents?.map((event) => (
                 <Card
-                  key={event.id}
+                  key={event._id}
                   className="border border-border cursor-pointer hover:shadow-md transition-shadow"
                 >
                   <CardContent className="p-6">
@@ -323,7 +323,7 @@ export default function EventsPage() {
                             <CardTitle className="text-xl text-foreground">
                               {event.featuredSessionId
                                 ? event.sessions?.find(
-                                    (s) => s.id === event.featuredSessionId
+                                    (s) => s._id === event.featuredSessionId
                                   )?.title || event.title
                                 : event.title}
                             </CardTitle>
@@ -382,7 +382,7 @@ export default function EventsPage() {
                         </div>
 
                         <Button asChild>
-                          <Link href={`/event/${event.id}/details`}>
+                          <Link href={`/event/${event._id}/details`}>
                             View Details
                           </Link>
                         </Button>

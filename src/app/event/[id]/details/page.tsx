@@ -277,7 +277,7 @@ export default function EventDetailsPage() {
 
                     {event?.hasInPerson && (
                       <Button className="w-full" size="lg" asChild>
-                        <Link href={`/event/${event?.id}/session`}>
+                        <Link href={`/event/${event?._id}/session`}>
                           <Building className="h-4 w-4 mr-2" />
                           Join In Person
                         </Link>
@@ -291,7 +291,7 @@ export default function EventDetailsPage() {
                         size="lg"
                         asChild
                       >
-                        <Link href={`/event/${event?.id}/session`}>
+                        <Link href={`/event/${event?._id}/session`}>
                           <Video className="h-4 w-4 mr-2" />
                           {isEventLive ? 'Join Live Stream' : 'Join Online'}
                         </Link>

@@ -3,7 +3,6 @@ import { v } from 'convex/values';
 
 export default defineSchema({
   events: defineTable({
-    id: v.string(),
     title: v.string(),
     description: v.string(),
     date: v.string(),
@@ -24,12 +23,11 @@ export default defineSchema({
     isLive: v.boolean(),
     tags: v.array(v.string()),
     category: v.string(),
-    featuredSessionId: v.optional(v.number()),
+    featuredSessionId: v.optional(v.id('sessions')),
   }),
 
   sessions: defineTable({
-    id: v.number(),
-    eventId: v.string(),
+    eventId: v.id('events'),
     title: v.string(),
     type: v.string(),
     startTime: v.number(), // Unix timestamp
@@ -48,16 +46,14 @@ export default defineSchema({
   }),
 
   questions: defineTable({
-    id: v.number(),
-    sessionId: v.number(),
-    text: v.string(),
+    sessionId: v.id('sessions'),
+    text: v.optional(v.string()),
     author: v.string(),
-    timestamp: v.number(), // Unix timestamp
     isHandRaise: v.optional(v.boolean()),
   }),
 
   sessionFeedback: defineTable({
-    sessionId: v.number(),
+    sessionId: v.id('sessions'),
     rating: v.number(),
     tags: v.array(v.string()),
     comment: v.string(),

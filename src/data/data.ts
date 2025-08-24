@@ -1,62 +1,6 @@
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-
-// Type definitions (keeping for TypeScript compatibility)
-export type SessionType = 'announcement' | 'break' | 'talk';
-
-export interface SessionFeedback {
-  rating: number;
-  tags: string[];
-  comment: string;
-}
-
-export interface Question {
-  id: number;
-  text: string;
-  author: string;
-  sessionId: number;
-  isHandRaise?: boolean;
-  timestamp: Date;
-}
-
-export interface Session {
-  id: number;
-  title: string;
-  type: SessionType;
-  startTime: Date;
-  endTime: Date;
-  completed: boolean;
-  isActive: boolean;
-  speaker?: {
-    name: string;
-    avatar: string;
-    role: string;
-  };
-  description?: string;
-  videoLink?: string;
-  questions: Question[];
-  feedback: SessionFeedback;
-}
-
-export interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  location: string;
-  attendeeCount: number;
-  maxAttendees: number;
-  price: string;
-  speakers: { name: string; role: string; company?: string }[];
-  hasInPerson: boolean;
-  hasOnline: boolean;
-  isLive: boolean;
-  tags: string[];
-  category: 'workshop' | 'talk' | 'networking' | 'hackathon' | 'conference';
-  sessions: Session[];
-  featuredSessionId?: number; // ID of the session to feature on home/events pages
-}
+import { Id } from '../../convex/_generated/dataModel';
 
 // Hooks for querying data
 export const useEvents = () => {
@@ -67,7 +11,7 @@ export const useEvent = (id: string) => {
   return useQuery(api.events.getById, { id });
 };
 
-export const useEventsByCategory = (category: Event['category']) => {
+export const useEventsByCategory = (category: string) => {
   return useQuery(api.events.getByCategory, { category });
 };
 
@@ -83,16 +27,20 @@ export const useSessions = (eventId: string) => {
   return useQuery(api.events.getSessionsByEventId, { eventId });
 };
 
-export const useSession = (id: number) => {
+export const useSession = (id: Id<'sessions'>) => {
   return useQuery(api.sessions.getById, { id });
 };
 
-export const useQuestions = (sessionId: number) => {
-  return useQuery(api.questions.getBySessionId, { sessionId });
+export const useQuestions = (sessionId: Id<'sessions'>) => {
+  return useQuery(api.questions.getBySessionId, {
+    sessionId,
+  });
 };
 
-export const useSessionFeedback = (sessionId: number) => {
-  return useQuery(api.sessionFeedback.getBySessionId, { sessionId });
+export const useSessionFeedback = (sessionId: Id<'sessions'>) => {
+  return useQuery(api.sessionFeedback.getBySessionId, {
+    sessionId,
+  });
 };
 
 // Mutations for modifying data
@@ -109,11 +57,11 @@ export const useDeleteEvent = () => {
 };
 
 export const useAddQuestion = () => {
-  return useMutation(api.events.addQuestion);
+  return useMutation(api.questions.create);
 };
 
 export const useUpdateSessionFeedback = () => {
-  return useMutation(api.events.updateSessionFeedback);
+  return useMutation(api.sessionFeedback.update);
 };
 
 export const useUpdateAttendeeCount = () => {

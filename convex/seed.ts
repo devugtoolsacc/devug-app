@@ -552,7 +552,6 @@ export const seed = action({
     for (const eventData of sampleEvents) {
       // Insert the event
       const eventId = await ctx.runMutation(api.events.create, {
-        id: eventData.id,
         title: eventData.title,
         description: eventData.description,
         date: eventData.date,
@@ -567,7 +566,6 @@ export const seed = action({
         isLive: eventData.isLive,
         tags: eventData.tags,
         category: eventData.category,
-        featuredSessionId: eventData.featuredSessionId,
       });
 
       console.log(`Created event: ${eventData.title}`);
@@ -576,8 +574,7 @@ export const seed = action({
       for (const session of eventData.sessions) {
         // Insert session
         const sessionId = await ctx.runMutation(api.sessions.create, {
-          id: session.id,
-          eventId: eventData.id,
+          eventId,
           title: session.title,
           type: session.type,
           startTime: session.startTime.getTime(), // Convert to Unix timestamp
@@ -593,11 +590,9 @@ export const seed = action({
         // Insert questions for this session
         for (const question of session.questions) {
           await ctx.runMutation(api.questions.create, {
-            id: question.id,
-            sessionId: session.id,
+            sessionId,
             text: question.text,
             author: question.author,
-            timestamp: question.timestamp.getTime(), // Convert to Unix timestamp
             isHandRaise: question.isHandRaise,
           });
         }
@@ -609,7 +604,7 @@ export const seed = action({
           session.feedback.comment
         ) {
           await ctx.runMutation(api.sessionFeedback.create, {
-            sessionId: session.id,
+            sessionId,
             rating: session.feedback.rating,
             tags: session.feedback.tags,
             comment: session.feedback.comment,

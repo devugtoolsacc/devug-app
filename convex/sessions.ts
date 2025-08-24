@@ -3,7 +3,7 @@ import { v } from 'convex/values';
 
 // Get sessions by event ID
 export const getByEventId = query({
-  args: { eventId: v.string() },
+  args: { eventId: v.id('events') },
   handler: async (ctx, args) => {
     const sessions = await ctx.db
       .query('sessions')
@@ -15,26 +15,20 @@ export const getByEventId = query({
       sessions.map(async (session) => {
         const questions = await ctx.db
           .query('questions')
-          .filter((q) => q.eq(q.field('sessionId'), session.id))
+          .filter((q) => q.eq(q.field('sessionId'), session._id))
           .collect();
 
         const feedback = await ctx.db
           .query('sessionFeedback')
-          .filter((q) => q.eq(q.field('sessionId'), session.id))
+          .filter((q) => q.eq(q.field('sessionId'), session._id))
           .collect();
 
         return {
           ...session,
           startTime: session.startTime,
           endTime: session.endTime,
-          questions: questions.map((q) => ({
-            ...q,
-            timestamp: q.timestamp,
-          })),
-          feedback:
-            feedback.length > 0
-              ? feedback[0]
-              : { rating: 0, tags: [], comment: '' },
+          questions,
+          feedback,
         };
       })
     );
@@ -45,37 +39,31 @@ export const getByEventId = query({
 
 // Get a single session by ID
 export const getById = query({
-  args: { id: v.number() },
+  args: { id: v.id('sessions') },
   handler: async (ctx, args) => {
     const session = await ctx.db
       .query('sessions')
-      .filter((q) => q.eq(q.field('id'), args.id))
+      .filter((q) => q.eq(q.field('_id'), args.id))
       .first();
 
     if (!session) return null;
 
     const questions = await ctx.db
       .query('questions')
-      .filter((q) => q.eq(q.field('sessionId'), session.id))
+      .filter((q) => q.eq(q.field('sessionId'), session._id))
       .collect();
 
     const feedback = await ctx.db
       .query('sessionFeedback')
-      .filter((q) => q.eq(q.field('sessionId'), session.id))
+      .filter((q) => q.eq(q.field('sessionId'), session._id))
       .collect();
 
     return {
       ...session,
       startTime: session.startTime,
       endTime: session.endTime,
-      questions: questions.map((q) => ({
-        ...q,
-        timestamp: q.timestamp,
-      })),
-      feedback:
-        feedback.length > 0
-          ? feedback[0]
-          : { rating: 0, tags: [], comment: '' },
+      questions,
+      feedback,
     };
   },
 });
@@ -83,12 +71,11 @@ export const getById = query({
 // Create a new session
 export const create = mutation({
   args: {
-    id: v.number(),
-    eventId: v.string(),
+    eventId: v.id('events'),
     title: v.string(),
     type: v.string(),
-    startTime: v.number(),
-    endTime: v.number(),
+    startTime: v.number(), // Unix timestamp
+    endTime: v.number(), // Unix timestamp
     completed: v.boolean(),
     isActive: v.boolean(),
     speaker: v.optional(
@@ -109,7 +96,7 @@ export const create = mutation({
 // Update a session
 export const update = mutation({
   args: {
-    id: v.number(),
+    id: v.id('sessions'),
     title: v.optional(v.string()),
     type: v.optional(v.string()),
     startTime: v.optional(v.number()),
@@ -130,7 +117,7 @@ export const update = mutation({
     const { id, ...updateFields } = args;
     const session = await ctx.db
       .query('sessions')
-      .filter((q) => q.eq(q.field('id'), id))
+      .filter((q) => q.eq(q.field('_id'), id))
       .first();
 
     if (session) {
@@ -141,7 +128,7 @@ export const update = mutation({
 
 // Delete a session and all its related data
 export const remove = mutation({
-  args: { id: v.number() },
+  args: { id: v.id('sessions') },
   handler: async (ctx, args) => {
     // Delete all questions for this session
     await ctx.db
@@ -164,7 +151,7 @@ export const remove = mutation({
     // Delete the session
     const session = await ctx.db
       .query('sessions')
-      .filter((q) => q.eq(q.field('id'), args.id))
+      .filter((q) => q.eq(q.field('_id'), args.id))
       .first();
 
     if (session) {

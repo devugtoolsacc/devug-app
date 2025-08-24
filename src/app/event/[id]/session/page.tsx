@@ -25,9 +25,10 @@ import {
   Megaphone,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { useCreateQuestion, useEvents } from '@/data/data';
+import { useCreateQuestion, useDeleteQuestion, useEvents } from '@/data/data';
 import { api } from '../../../../../convex/_generated/api';
 import { useMutation } from 'convex/react';
+import { Id } from '../../../../../convex/_generated/dataModel';
 
 // type SessionType = 'announcement' | 'break' | 'talk';
 
@@ -260,10 +261,10 @@ export default function SessionPage() {
   const events = useEvents();
   const askQuestion = useCreateQuestion();
 
-  const removeQuestionMutation = useMutation(api.questions.remove);
+  const removeQuestionMutation = useDeleteQuestion();
 
   // Find the event by ID
-  const event = events?.find((e) => e.id === eventId);
+  const event = events?.find((e) => e._id === eventId);
 
   // Convert event sessions to SessionData format and add open state
   // const [sessions, setSessions] = useState(
@@ -273,7 +274,7 @@ export default function SessionPage() {
   //   })) || []
   // );
 
-  const [openSessions, setOpenSessions] = useState<number[]>([]);
+  const [openSessions, setOpenSessions] = useState<Id<'sessions'>[]>([]);
   const [newQuestion, setNewQuestion] = useState('');
   const [isHandRaised, setIsHandRaised] = useState(false);
 
@@ -283,7 +284,7 @@ export default function SessionPage() {
     setOpenSessions(
       event.sessions
         .filter((session) => session.isActive)
-        .map((session) => session.id)
+        .map((session) => session._id)
     );
   }, [event]);
 
@@ -324,7 +325,7 @@ export default function SessionPage() {
     );
   }
 
-  const toggleSession = (sessionId: number) => {
+  const toggleSession = (sessionId: Id<'sessions'>) => {
     setOpenSessions((prev) =>
       prev.includes(sessionId)
         ? prev.filter((id) => id !== sessionId)
@@ -332,32 +333,28 @@ export default function SessionPage() {
     );
   };
 
-  const handleAskQuestion = async (sessionId: number) => {
+  const handleAskQuestion = async (sessionId: Id<'sessions'>) => {
     if (!newQuestion.trim()) return;
 
     await askQuestion({
-      id: Date.now(),
       sessionId,
       text: newQuestion,
       author: 'you',
-      timestamp: new Date().getTime(),
     });
     setNewQuestion('');
   };
 
-  const handleRaiseHand = async (sessionId: number) => {
+  const handleRaiseHand = async (sessionId: Id<'sessions'>) => {
     await askQuestion({
-      id: Date.now(),
       sessionId,
       text: 'You raised your hand.',
-      author: 'System',
-      timestamp: new Date().getTime(),
+      author: 'you',
     });
 
     setIsHandRaised(!isHandRaised);
   };
 
-  const removeQuestion = async (questionId: number) => {
+  const removeQuestion = async (questionId: Id<'questions'>) => {
     await removeQuestionMutation({ id: questionId });
   };
 
@@ -387,9 +384,9 @@ export default function SessionPage() {
       <div className="space-y-4">
         {event?.sessions.map((session) => (
           <Collapsible
-            key={session.id}
-            open={openSessions.includes(session.id)}
-            onOpenChange={() => toggleSession(session.id)}
+            key={session._id}
+            open={openSessions.includes(session._id)}
+            onOpenChange={() => toggleSession(session._id)}
           >
             <div className="border border-border rounded-lg">
               <CollapsibleTrigger className="w-full flex items-center justify-between p-6 hover:bg-muted/50 transition-colors">
@@ -434,7 +431,7 @@ export default function SessionPage() {
                 </div>
                 <ChevronDown
                   className={`h-6 w-6 transition-transform ${
-                    openSessions.includes(session.id) ? 'rotate-180' : ''
+                    openSessions.includes(session._id) ? 'rotate-180' : ''
                   }`}
                 />
               </CollapsibleTrigger>
@@ -503,7 +500,7 @@ export default function SessionPage() {
                                     }
                                     onKeyPress={(e) =>
                                       e.key === 'Enter' &&
-                                      handleAskQuestion(session.id)
+                                      handleAskQuestion(session._id)
                                     }
                                     className="min-h-[60px] text-lg"
                                   />
@@ -511,7 +508,7 @@ export default function SessionPage() {
                                 <div className="flex gap-2">
                                   <Button
                                     onClick={() =>
-                                      handleAskQuestion(session.id)
+                                      handleAskQuestion(session._id)
                                     }
                                     disabled={!newQuestion.trim()}
                                     className="px-8 py-4"
@@ -520,7 +517,7 @@ export default function SessionPage() {
                                   </Button>
                                   <HandRaiseIcon
                                     isRaised={isHandRaised}
-                                    onClick={() => handleRaiseHand(session.id)}
+                                    onClick={() => handleRaiseHand(session._id)}
                                   />
                                 </div>
                               </div>
@@ -540,17 +537,17 @@ export default function SessionPage() {
                             ) : (
                               session.questions.map((question, index) => (
                                 <div
-                                  key={question.id}
+                                  key={question._id}
                                   className="flex items-start justify-between gap-2 p-3 rounded border"
                                 >
                                   <div className="flex-1">
                                     <span className="text-sm">
-                                      {index + 1}. {question.text} -{' '}
+                                      {index + 1}. {question.text || ''} -{' '}
                                       {question.author}
                                     </span>
                                     <div className="text-xs text-muted-foreground mt-1">
                                       {new Date(
-                                        question.timestamp
+                                        question._creationTime
                                       ).toLocaleTimeString()}
                                     </div>
                                   </div>
@@ -559,7 +556,7 @@ export default function SessionPage() {
                                       <>
                                         <button
                                           onClick={() =>
-                                            removeQuestion(question.id)
+                                            removeQuestion(question._id)
                                           }
                                           className="text-muted-foreground hover:text-foreground p-1"
                                         >
@@ -567,7 +564,7 @@ export default function SessionPage() {
                                         </button>
                                         <button
                                           onClick={() =>
-                                            removeQuestion(question.id)
+                                            removeQuestion(question._id)
                                           }
                                           className="text-muted-foreground hover:text-destructive p-1"
                                         >
