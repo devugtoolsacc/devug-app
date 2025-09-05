@@ -2,13 +2,15 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-### Prerequisite 
+### Prerequisite
 
 - install `pnpm` and use it to run, instead of npm
 
 First, run the development server:
 
 ```bash
+pnpm install
+
 pnpm run  startconvex
 
 pnpm run dev
